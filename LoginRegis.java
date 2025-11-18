@@ -11,14 +11,27 @@ public class LoginRegis {
         gc.anchor = GridBagConstraints.CENTER;
         gc.fill = GridBagConstraints.NONE;
 
+        // Logo
+        ImageIcon icon = new ImageIcon(LoginRegis.class.getResource("/Manila_Logo.png"));
+        if (icon != null) {
+            Image img = icon.getImage();
+            int size = 120;
+            Image scaled = img.getScaledInstance(size, size, Image.SCALE_SMOOTH);
+            JLabel imgLabel = new JLabel(new ImageIcon(scaled));
+            gc.gridy = 0;
+            choice.add(imgLabel, gc);
+        }
+
         // Title
-        gc.gridy = 0;
+        gc.gridy = 1;
+        gc.insets = new Insets(6, 6, 12, 6); // extra space below title
         JLabel title = new JLabel("Manila Online Service Request", JLabel.CENTER);
         title.setFont(title.getFont().deriveFont(Font.BOLD, title.getFont().getSize() + 6f));
         choice.add(title, gc);
 
         // Buttons
-        gc.gridy = 1;
+        gc.gridy = 2;
+        gc.insets = new Insets(4, 4, 4, 4);
         JPanel col = new JPanel(new GridLayout(2, 1, 8, 12));
         JButton bLogin = new JButton("Login");
         bLogin.setPreferredSize(new Dimension(160, 36));
@@ -34,7 +47,7 @@ public class LoginRegis {
 
         return choice;
     }
-    
+
     // creates the Login form panel
     public static JPanel createLoginPanel(final App app) {
         JPanel loginForm = new JPanel(new GridBagLayout());
