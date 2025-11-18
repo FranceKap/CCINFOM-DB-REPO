@@ -17,6 +17,7 @@ public class App {
     private Dimension windowedSize;
     private boolean fullscreen = false;
     private JButton fsToggle;
+    private String profileReturn = "choice";
 
     public void start() {
         Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
@@ -44,6 +45,9 @@ public class App {
         cardPanel.add(LoginRegis.createLoginPanel(this), "login");
         cardPanel.add(LoginRegis.createRegisterPanel(this), "register");
 
+        // Profile Page
+       cardPanel.add(Profile.createPanel(this), "profile");
+
         // other pages
         cardPanel.add(CitizenMenu.createPanel(this), "citizen");
         cardPanel.add(StaffMenu.createPanel(this), "staff");
@@ -56,7 +60,7 @@ public class App {
         JPanel container = new JPanel(new BorderLayout());
         container.setBorder(BorderFactory.createEmptyBorder(4, 6, 6, 6));
 
-        // left: small fullscreen toggle
+        // left
         JPanel left = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 4));
         fsToggle = new JButton("Fullscreen");
         fsToggle.setPreferredSize(new Dimension(72, 24));
@@ -69,7 +73,7 @@ public class App {
         left.add(fsToggle);
         container.add(left, BorderLayout.WEST);
 
-        // right: developer nav (temporary)
+        // right
         JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 4));
         JButton viewCitizen = new JButton("Dev: Citizen");
         viewCitizen.addActionListener(new java.awt.event.ActionListener() {
@@ -87,7 +91,7 @@ public class App {
         right.add(viewStaff);
         container.add(right, BorderLayout.EAST);
 
-        // center: placeholder note
+        // center
         container.add(new JLabel(""), BorderLayout.CENTER);
         return container;
     }
@@ -96,14 +100,14 @@ public class App {
         if (cards != null && cardPanel != null) cards.show(cardPanel, name);
     }
 
-    // fullscreen toggle (called via method reference)
+    // fullscreen toggle
     private void onToggleFullscreen(ActionEvent e) { 
         toggleFullscreen(); 
     }
 
     private void toggleFullscreen() {
         fullscreen = !fullscreen;
-        frame.dispose();                 // required to change undecorated
+        frame.dispose();            
         frame.setUndecorated(fullscreen);
         if (fullscreen) {
             fsToggle.setText("Windowed");
@@ -143,4 +147,15 @@ public class App {
     public void onShowChoice(ActionEvent e) { 
         showCard("choice"); 
     }
+
+    public void showProfileFromStaff() { 
+        profileReturn = "staff"; showCard("profile"); 
+    }
+    public void showProfileFromCitizen() { 
+        profileReturn = "citizen"; showCard("profile"); 
+    }
+    public String getProfileReturn() { 
+        return profileReturn; 
+    }
+
 }
