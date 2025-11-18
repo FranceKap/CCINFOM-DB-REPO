@@ -158,7 +158,7 @@ public class DbConnection {
             System.out.println("CreateTableAssignmentResolution");
             stmt.execute(CreateTableReopenRequest);
             System.out.println("CreateTableReopenRequest");
-            //TODO placeholders I used just to test initializeDatabase, reordered stmt's
+            //TODO placeholders I used just to test initializeDatabase, reordered stmts
 
             System.out.println("Database and tables initialized successfully.");
         } catch (SQLException e) {
