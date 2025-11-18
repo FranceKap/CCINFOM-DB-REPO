@@ -19,6 +19,12 @@ public class App {
     private JButton fsToggle;
     private String profileReturn = "choice";
 
+    private DbConnection db;
+
+    public App(DbConnection db){
+        this.db = db;
+    }
+
     public void start() {
         Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
         windowedSize = new Dimension((int)(screen.width * 0.6), (int)(screen.height * 0.6));
@@ -43,7 +49,7 @@ public class App {
         // choice + login + register panels are provided by LoginRegis
         cardPanel.add(LoginRegis.createChoicePanel(this), "choice");
         cardPanel.add(LoginRegis.createLoginPanel(this), "login");
-        cardPanel.add(LoginRegis.createRegisterPanel(this), "register");
+        cardPanel.add(LoginRegis.createRegisterPanel(this, db), "register");
 
         // Profile Page
        cardPanel.add(Profile.createPanel(this), "profile");

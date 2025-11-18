@@ -123,7 +123,7 @@ public class LoginRegis {
     }
 
     // creates the Register form panel
-    public static JPanel createRegisterPanel(final App app) {
+    public static JPanel createRegisterPanel(final App app, DbConnection db) {
         JPanel registerForm = new JPanel(new GridBagLayout());
         GridBagConstraints r = new GridBagConstraints();
         r.insets = new Insets(6, 6, 6, 6);
@@ -159,6 +159,13 @@ public class LoginRegis {
         doRegister.addActionListener(new ActionListener() {
             @Override public void actionPerformed(ActionEvent e) {
                 String user = regUser.getText().trim();
+                String email = regEmail.getText().trim();
+                String password = new String(regPass.getPassword());
+
+                //CitizenRegister(String firstName, String lastName, int contactNbr, String email, String address, String password)
+                db.CitizenRegister("firstName", "lastName", 0, email, user, password);
+                //TODO placeholder strings, pls complete LoginRegis to include the other attributes
+
                 JOptionPane.showMessageDialog(app.getFrame(),
                     "Attempt register user: " + user,
                     "Register", JOptionPane.INFORMATION_MESSAGE);

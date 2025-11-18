@@ -10,7 +10,7 @@ public class Main {
 
         SwingUtilities.invokeLater(new Runnable() {
             @Override public void run() {
-                new App().start();
+                new App(db).start();
             }
         });
     }
