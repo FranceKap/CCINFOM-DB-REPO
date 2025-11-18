@@ -227,6 +227,38 @@ public class DbConnection {
         }
     }
 
+    //gets CitizenLoginName
+    //i know it's inefficient and I copied it off of the function above but shhhhhh
+    public String getCitizenLoginName(String email, String password){
+        String getCitizenName = """
+        SELECT * 
+        FROM Citizen 
+        WHERE Email = ? AND Password = ?
+                """;
+        try{
+            PreparedStatement pstmt = conn.prepareStatement(getCitizenName);
+
+            pstmt.setString(1, email);
+            pstmt.setString(2, password);
+
+
+            ResultSet rs = pstmt.executeQuery();
+
+            if(rs.next()){
+                
+                //System.out.println("Login successful. Welcome, " + rs.getString("FirstName") + " " + rs.getString("LastName") + "!");
+                return "Login successful. Welcome, " + rs.getString("FirstName") + " " + rs.getString("LastName") + "!";
+            }
+            else{
+                return "Login failed. Invalid email or password.";
+            }
+            //surely it won't cause an invalid login error
+        } catch (SQLException e){
+            //System.err.println("Error during citizen login: " + e.getMessage());
+            return "Error during citizen login: " + e.getMessage();
+        }
+    }
+
     public void StaffRegister(String firstName, String lastName, int contactNbr, String availability, String password) {
         String insertStaffSQL = """
         INSERT INTO Staff (
