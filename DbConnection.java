@@ -44,8 +44,6 @@ public class DbConnection {
     CREATE TABLE IF NOT EXISTS Citizen (AccountID INT PRIMARY KEY AUTO_INCREMENT, 
     FirstName VARCHAR(50), LastName VARCHAR(50), ContactNbr INT, Email VARCHAR(100), 
     Address VARCHAR(250), Password VARCHAR(50));
-
-    (AccountID NOT NULL);
     """;
 
     String CreateTableStaff = 
@@ -188,7 +186,7 @@ public class DbConnection {
 
 
     //methods for inserting data into service, departments and service requests
-    public void FileService(String serviceName, int departmentID) {
+    public void CreateService(String serviceName, int departmentID) {
         String insertServiceSQL = "INSERT INTO Service (ServiceName, DepartmentID) VALUES (?, ?)";
         try{
             conn = getConnection();
@@ -225,21 +223,33 @@ public class DbConnection {
     }
 
 
-    public void CreateService(String serviceName, int departmentID) {
-        String insertServiceSQL = "INSERT INTO Service (ServiceName, DepartmentID) VALUES (?, ?);";
+    public void FileServiceRequest(int accountID, int staffID, int serviceID, String dateFiled, 
+                                    String address, String serviceDesc){
+        String insertServiceRequestSQL = 
+        "INSERT INTO ServiceRequest (CitizenID, StaffID, ServiceID, DateFiled, Address, ServicDesc, RequestStatus) VALUES (?, ?, ?, ?, ?, ?, ?)";
+
         try {
             conn = getConnection();
-            PreparedStatement pstmt = conn.prepareStatement(insertServiceSQL);
 
-            pstmt.setString(1, serviceName);
-            pstmt.setInt(2, departmentID);
+            PreparedStatement pstmt = conn.prepareStatement(insertServiceRequestSQL);
+
+            pstmt.setInt(1, accountID);
+            pstmt.setInt(2, staffID);
+            pstmt.setInt(3, serviceID);
+            pstmt.setString(4, dateFiled);
+            pstmt.setString(5, address);
+            pstmt.setString(6, serviceDesc);
+            pstmt.setString(7, "Pending");
 
             pstmt.executeUpdate();
-            System.out.println("Service creation successful.");
+
+            System.out.println("Service request filed.");
 
         } catch (SQLException e) {
-            System.err.println("Service creation error: " + e.getMessage());
+            System.err.println("Error filing service request: " + e.getMessage());
         }
+    
+    
     }
 
 
