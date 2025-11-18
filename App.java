@@ -22,34 +22,17 @@ public class App {
         Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
         windowedSize = new Dimension((int)(screen.width * 0.6), (int)(screen.height * 0.6));
 
-        frame = new JFrame("My Application");
+        frame = new JFrame();
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout());
 
-        frame.add(createTopBar(), BorderLayout.NORTH);
         frame.add(createCardPanel(), BorderLayout.CENTER);
-        frame.add(createDevPanel(), BorderLayout.SOUTH); // developer-only buttons bottom-right
+        frame.add(createBottomPanel(), BorderLayout.SOUTH);
 
         frame.setSize(windowedSize);
         frame.setResizable(false); // fixed (windowed) or fullscreen via toggle
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
-    }
-
-    private JPanel createTopBar() {
-        JPanel topBar = new JPanel(new BorderLayout());
-        topBar.setBorder(BorderFactory.createEmptyBorder(6,6,6,6));
-
-        JLabel title = new JLabel("My App");
-        topBar.add(title, BorderLayout.WEST);
-
-        JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
-        fsToggle = new JButton("Fullscreen");
-        fsToggle.addActionListener(this::onToggleFullscreen);
-        right.add(fsToggle);
-
-        topBar.add(right, BorderLayout.EAST);
-        return topBar;
     }
 
     private JPanel createCardPanel() {
@@ -69,26 +52,45 @@ public class App {
         return cardPanel;
     }
 
+    private JPanel createBottomPanel() {
+        JPanel container = new JPanel(new BorderLayout());
+        container.setBorder(BorderFactory.createEmptyBorder(4, 6, 6, 6));
 
-    // developer-only panel placed at bottom-right (not final)
-    private JPanel createDevPanel() {
-        JPanel dev = new JPanel(new BorderLayout());
-        JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 6));
-        JButton viewCitizen = new JButton("Dev: View Citizen");
-        viewCitizen.addActionListener(e -> showCard("citizen"));
-        JButton viewStaff = new JButton("Dev: View Staff");
-        viewStaff.addActionListener(e -> showCard("staff"));
+        // left: small fullscreen toggle
+        JPanel left = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 4));
+        fsToggle = new JButton("Fullscreen");
+        fsToggle.setPreferredSize(new Dimension(72, 24));
+        fsToggle.setMargin(new java.awt.Insets(2, 2, 2, 2));
+        fsToggle.addActionListener(new java.awt.event.ActionListener() {
+            @Override public void actionPerformed(java.awt.event.ActionEvent e) {
+                onToggleFullscreen(e);
+            }
+        });
+        left.add(fsToggle);
+        container.add(left, BorderLayout.WEST);
+
+        // right: developer nav (temporary)
+        JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 4));
+        JButton viewCitizen = new JButton("Dev: Citizen");
+        viewCitizen.addActionListener(new java.awt.event.ActionListener() {
+            @Override public void actionPerformed(java.awt.event.ActionEvent e) {
+                onShowCitizen(e);
+            }
+        });
+        JButton viewStaff = new JButton("Dev: Staff");
+        viewStaff.addActionListener(new java.awt.event.ActionListener() {
+            @Override public void actionPerformed(java.awt.event.ActionEvent e) {
+                onShowStaff(e);
+            }
+        });
         right.add(viewCitizen);
         right.add(viewStaff);
-        dev.add(right, BorderLayout.EAST);
+        container.add(right, BorderLayout.EAST);
 
-        JLabel note = new JLabel("developer testing buttons (temporary)");
-        note.setBorder(BorderFactory.createEmptyBorder(0,6,0,0));
-        dev.add(note, BorderLayout.WEST);
-
-        return dev;
+        // center: placeholder note
+        container.add(new JLabel(""), BorderLayout.CENTER);
+        return container;
     }
-
     
     public void showCard(String name) {
         if (cards != null && cardPanel != null) cards.show(cardPanel, name);
@@ -120,5 +122,25 @@ public class App {
     // allow pages to use frame for dialogs if needed
     public JFrame getFrame() { 
         return frame; 
+    }
+
+    public void onShowLogin(ActionEvent e) { 
+        showCard("login"); 
+    }
+
+    public void onShowRegister(ActionEvent e) { 
+        showCard("register"); 
+    }
+
+    public void onShowCitizen(ActionEvent e) { 
+        showCard("citizen"); 
+    }
+
+    public void onShowStaff(ActionEvent e) { 
+        showCard("staff"); 
+    }
+    
+    public void onShowChoice(ActionEvent e) { 
+        showCard("choice"); 
     }
 }
