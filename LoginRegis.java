@@ -2,7 +2,40 @@ import java.awt.*;
 import javax.swing.*;
 
 public class LoginRegis {
-    // creates the Login form panel (shown immediately when app.showCard("login") is called)
+
+    public static JPanel createChoicePanel(final App app) {
+        JPanel choice = new JPanel(new GridBagLayout());
+        GridBagConstraints gc = new GridBagConstraints();
+        gc.insets = new Insets(8, 8, 8, 8);
+        gc.gridx = 0;
+        gc.anchor = GridBagConstraints.CENTER;
+        gc.fill = GridBagConstraints.NONE;
+
+        // Title
+        gc.gridy = 0;
+        JLabel title = new JLabel("Manila Online Service Request", JLabel.CENTER);
+        title.setFont(title.getFont().deriveFont(Font.BOLD, title.getFont().getSize() + 6f));
+        choice.add(title, gc);
+
+        // Buttons
+        gc.gridy = 1;
+        JPanel col = new JPanel(new GridLayout(2, 1, 8, 12));
+        JButton bLogin = new JButton("Login");
+        bLogin.setPreferredSize(new Dimension(160, 36));
+        bLogin.addActionListener(e -> app.showCard("login"));
+
+        JButton bRegister = new JButton("Register");
+        bRegister.setPreferredSize(new Dimension(160, 36));
+        bRegister.addActionListener(e -> app.showCard("register"));
+
+        col.add(bLogin);
+        col.add(bRegister);
+        choice.add(col, gc);
+
+        return choice;
+    }
+    
+    // creates the Login form panel
     public static JPanel createLoginPanel(final App app) {
         JPanel loginForm = new JPanel(new GridBagLayout());
         GridBagConstraints l = new GridBagConstraints();
@@ -39,7 +72,7 @@ public class LoginRegis {
         return loginForm;
     }
 
-    // creates the Register form panel (shown immediately when app.showCard("register") is called)
+    // creates the Register form panel
     public static JPanel createRegisterPanel(final App app) {
         JPanel registerForm = new JPanel(new GridBagLayout());
         GridBagConstraints r = new GridBagConstraints();

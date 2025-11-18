@@ -2,13 +2,8 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.GridLayout;
-import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
-
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -61,13 +56,12 @@ public class App {
         cards = new CardLayout();
         cardPanel = new JPanel(cards);
 
-        // center choice: only Login and Register buttons
-        cardPanel.add(createChoicePanel(), "choice");
-
-        // Use LoginRegis to create both the login and register panels
+        // choice + login + register panels are provided by LoginRegis
+        cardPanel.add(LoginRegis.createChoicePanel(this), "choice");
         cardPanel.add(LoginRegis.createLoginPanel(this), "login");
         cardPanel.add(LoginRegis.createRegisterPanel(this), "register");
 
+        // other pages
         cardPanel.add(CitizenMenu.createPanel(this), "citizen");
         cardPanel.add(StaffMenu.createPanel(this), "staff");
 
@@ -75,28 +69,6 @@ public class App {
         return cardPanel;
     }
 
-    // Center choice panel: Login + Register in the middle
-    private JPanel createChoicePanel() {
-        JPanel choice = new JPanel(new GridBagLayout());
-        GridBagConstraints gc = new GridBagConstraints();
-        gc.insets = new Insets(8, 8, 8, 8);
-
-        JPanel col = new JPanel(new GridLayout(2, 1, 8, 12));
-
-        JButton bLogin = new JButton("Login");
-        bLogin.setPreferredSize(new Dimension(160, 36));
-        bLogin.addActionListener(e -> showCard("login"));      // directly show login card
-
-        JButton bRegister = new JButton("Register");
-        bRegister.setPreferredSize(new Dimension(160, 36));
-        bRegister.addActionListener(e -> showCard("register")); // directly show register card
-
-        col.add(bLogin);
-        col.add(bRegister);
-
-        choice.add(col, gc);
-        return choice;
-    }
 
     // developer-only panel placed at bottom-right (not final)
     private JPanel createDevPanel() {
@@ -123,7 +95,9 @@ public class App {
     }
 
     // fullscreen toggle (called via method reference)
-    private void onToggleFullscreen(ActionEvent e) { toggleFullscreen(); }
+    private void onToggleFullscreen(ActionEvent e) { 
+        toggleFullscreen(); 
+    }
 
     private void toggleFullscreen() {
         fullscreen = !fullscreen;
@@ -132,7 +106,8 @@ public class App {
         if (fullscreen) {
             fsToggle.setText("Windowed");
             frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-        } else {
+        } 
+        else {
             fsToggle.setText("Fullscreen");
             frame.setExtendedState(JFrame.NORMAL);
             frame.setSize(windowedSize);
