@@ -41,38 +41,96 @@ public class DbConnection {
 
     String CreateTableCitizen = 
     """
-    CREATE TABLE IF NOT EXISTS Citizen (AccountID INT PRIMARY KEY AUTO_INCREMENT, 
-    FirstName VARCHAR(50), LastName VARCHAR(50), ContactNbr INT, Email VARCHAR(100), 
-    Address VARCHAR(250), Password VARCHAR(50));
+    CREATE TABLE IF NOT EXISTS Citizen (
+    AccountID INT NOT NULL AUTO_INCREMENT, 
+    FirstName VARCHAR(50), 
+    LastName VARCHAR(50), 
+    ContactNbr INT, 
+    Email VARCHAR(100), 
+    Address VARCHAR(250), 
+    Password VARCHAR(50),
+    PRIMARY KEY (AccountID))
     """;
 
     String CreateTableStaff = 
     """
-    CREATE TABLE IF NOT EXISTS Staff (StaffID INT PRIMARY KEY AUTO_INCREMENT, 
-    DepartmentID INT FOREIGN KEY, FirstName VARCHAR(50), LastName VARCHAR(50), 
-    ContactNbr INT, Availability VARCHAR(50), Password VARCHAR(50));
+    CREATE TABLE IF NOT EXISTS Staff (
+    StaffID INT AUTO_INCREMENT, 
+    DepartmentID INT NOT NULL, 
+    FirstName VARCHAR(50), 
+    LastName VARCHAR(50), 
+    ContactNbr INT, 
+    Availability VARCHAR(50), 
+    Password VARCHAR(50),
+    PRIMARY KEY (StaffID),
+    FOREIGN KEY (DepartmentID) REFERENCES Department(DepartmentID))
     """;
 
     String CreateTableService = 
     """
-    CREATE TABLE IF NOT EXISTS Service (ServiceID INT PRIMARY KEY AUTO_INCREMENT, 
-    ServiceName VARCHAR(100), DepartmentID INT FOREIGN KEY);
+    CREATE TABLE IF NOT EXISTS Service (
+    ServiceID INT AUTO_INCREMENT, 
+    ServiceName VARCHAR(100), 
+    ServiceType VARCHAR(50), 
+    DepartmentID INT,
+    PRIMARY KEY (ServiceID),
+    FOREIGN KEY (DepartmentID) REFERENCES Department(DepartmentID))
     """;
 
     String CreateTableServiceRequest = 
     """
-    CREATE TABLE IF NOT EXISTS ServiceRequest (RequestID INT PRIMARY KEY AUTO_INCREMENT, 
-    CitizenID INT FOREIGN KEY, StaffID INT FOREIGN KEY, ServiceID INT FOREIGN KEY, 
-    DateFiled DATE, Address VARCHAR(250), ServicDesc VARCHAR(999), RequestStatus VARCHAR(10));
+    CREATE TABLE IF NOT EXISTS ServiceRequest (
+    RequestID INT AUTO_INCREMENT, 
+    AccountID INT NOT NULL, 
+    StaffID INT, 
+    ServiceID INT NOT NULL, 
+    DateFiled DATE, 
+    Address VARCHAR(250), 
+    ServiceDesc VARCHAR(999), 
+    RequestStatus VARCHAR(10), 
+    DateResolved DATE,
+    PRIMARY KEY (RequestID),
+    FOREIGN KEY (AccountID) REFERENCES Citizen(AccountID),
+    FOREIGN KEY (StaffID) REFERENCES Staff(StaffID),
+    FOREIGN KEY (ServiceID) REFERENCES Service(ServiceID))
     """;
 
-    static String CreateTableDepartment = 
-    "CREATE TABLE IF NOT EXISTS Department (DepartmentID INT PRIMARY KEY , DepartmentName VARCHAR(100));";
+    String CreateTableDepartment = 
+    """
+    CREATE TABLE IF NOT EXISTS Department (
+    DepartmentID INT, 
+    DepartmentName VARCHAR(100)
+    PRIMARY KEY (DepartmentID))
+    """;
+
+    String CreateTableAssignmentResolution = """
+    CREATE TABLE IF NOT EXISTS AssignmentResolution (
+    ResolutionID INT AUTO_INCREMENT,
+    RequestID INT NOT NULL,
+    StaffID INT NOT NULL,
+    ResolutionNote VARCHAR(1000),
+    ResolutionDate DATE NOT NULL,
+    StatusAfterAction VARCHAR(20),
+    PRIMARY KEY (ResolutionID),
+    FOREIGN KEY (RequestID) REFERENCES ServiceRequest(RequestID),
+    FOREIGN KEY (StaffID) REFERENCES Staff(StaffID))
+    """;
+
+    String CreateTableReopenRequest = """
+    CREATE TABLE IF NOT EXISTS ReopenRequest (
+    ReopenID INT AUTO_INCREMENT,
+    RequestID INT NOT NULL,
+    CitizenID INT NOT NULL,
+    Reason VARCHAR(1000) NOT NULL,
+    ReopenDate DATE NOT NULL,
+    PRIMARY KEY (ReopenID),
+    FOREIGN KEY (RequestID) REFERENCES ServiceRequest(RequestID),
+    FOREIGN KEY (CitizenID) REFERENCES Citizen(AccountID))
+    """;
 
     //schema and table initializer
     public void initializeDatabase() {
         try{
-            conn = getConnection();
             Statement stmt = conn.createStatement(); 
 
             stmt.execute(CreateDatabase);
@@ -82,6 +140,8 @@ public class DbConnection {
             stmt.execute(CreateTableService);
             stmt.execute(CreateTableServiceRequest);
             stmt.execute(CreateTableDepartment);
+            stmt.execute(CreateTableAssignmentResolution);
+            stmt.execute(CreateTableReopenRequest);
 
             System.out.println("Database and tables initialized successfully.");
         } catch (SQLException e) {
@@ -93,11 +153,18 @@ public class DbConnection {
 
     //methods for user login and registration
     public void CitizenRegister(String firstName, String lastName, int contactNbr, String email, String address, String password) {
-        String insertCitizenSQL = "INSERT INTO Citizen (FirstName, LastName, ContactNbr, Email, Address, Password) VALUES (?, ?, ?, ?, ?, ?)";
+        String insertCitizenSQL = """
+        INSERT INTO Citizen (
+        FirstName, 
+        LastName, 
+        ContactNbr, 
+        Email, 
+        Address, 
+        Password) 
+        VALUES (?, ?, ?, ?, ?, ?)                
+                """;
         
         try{
-            conn = getConnection();
-
             PreparedStatement pstmt = conn.prepareStatement(insertCitizenSQL);
 
             //value setters
@@ -115,11 +182,13 @@ public class DbConnection {
         }
     }
 
-    public void CitizenLogin(String email, String password){
-        String selectCitizenSQL = "SELECT * FROM Citizen WHERE Email = ? AND Password = ?";
+    public boolean CitizenLogin(String email, String password){
+        String selectCitizenSQL = """
+        SELECT * 
+        FROM Citizen 
+        WHERE Email = ? AND Password = ?
+                """;
         try{
-            conn = getConnection();
-
             PreparedStatement pstmt = conn.prepareStatement(selectCitizenSQL);
 
             pstmt.setString(1, email);
@@ -130,19 +199,28 @@ public class DbConnection {
 
             if(rs.next()){
                 System.out.println("Login successful. Welcome, " + rs.getString("FirstName") + " " + rs.getString("LastName") + "!");
+                return true;
             } else {
                 System.out.println("Login failed. Invalid email or password.");
+                return false;
             }
         } catch (SQLException e){
             System.err.println("Error during citizen login: " + e.getMessage());
+            return false;
         }
     }
 
     public void StaffRegister(String firstName, String lastName, int contactNbr, String availability, String password) {
-        String insertStaffSQL = "INSERT INTO Staff (FirstName, LastName, ContactNbr, Availability, Password) VALUES (?, ?, ?, ?, ?)";
+        String insertStaffSQL = """
+        INSERT INTO Staff (
+        FirstName, 
+        LastName, 
+        ContactNbr, 
+        Availability, 
+        Password) 
+        VALUES (?, ?, ?, ?, ?)
+                """;
         try{
-            conn = getConnection();
-
             PreparedStatement pstmt = conn.prepareStatement(insertStaffSQL);
 
             pstmt.setString(1, firstName);
@@ -161,11 +239,13 @@ public class DbConnection {
     }
 
     
-    public void StaffLogin(int staffID, String password){
-        String selectStaffSQL = "SELECT * FROM Staff WHERE StaffID = / AND Password = ?";
+    public boolean StaffLogin(int staffID, String password){
+        String selectStaffSQL = """
+        SELECT * 
+        FROM Staff 
+        WHERE StaffID = ? AND Password = ?
+                """;
         try{
-            conn = getConnection();
-
             PreparedStatement pstmt = conn.prepareStatement(selectStaffSQL);
 
             pstmt.setInt(1, staffID);
@@ -175,26 +255,34 @@ public class DbConnection {
 
             if(rs.next()){
                 System.out.println("Login successful. Welcome, " + rs.getString("FirstName") + " " + rs.getString("LastName") + "!");
+                return true;
             } else {
                 System.out.println("Login failed. Invalid Staff ID or password.");
+                return false;
             }
         } catch (SQLException e){
             System.err.println("Error during staff login: " + e.getMessage());
+            return false;
         }
     }
 
 
 
     //methods for inserting data into service, departments and service requests
-    public void CreateService(String serviceName, int departmentID) {
-        String insertServiceSQL = "INSERT INTO Service (ServiceName, DepartmentID) VALUES (?, ?)";
+    public void CreateService(String serviceName,String serviceType, int departmentID) {
+        String insertServiceSQL = """
+        INSERT INTO Service (
+        ServiceName, 
+        ServiceType, 
+        DepartmentID) 
+        VALUES (?, ?, ?)
+                """;
         try{
-            conn = getConnection();
-
              PreparedStatement pstmt = conn.prepareStatement(insertServiceSQL); 
 
             pstmt.setString(1, serviceName);
-            pstmt.setInt(2, departmentID);
+            pstmt.setString(2, serviceType);
+            pstmt.setInt(3, departmentID);
 
             pstmt.executeUpdate();
 
@@ -205,10 +293,13 @@ public class DbConnection {
     }
 
     public void CreateDepartment(int departmentID, String departmentName) {
-        String insertDepartmentSQL = "INSERT INTO Department (DepartmentID, DepartmentName) VALUES (?, ?)";
+        String insertDepartmentSQL = """
+        INSERT INTO Department (
+        DepartmentID, 
+        DepartmentName) 
+        VALUES (?, ?)
+                """;
         try{
-            conn = getConnection();
-
             PreparedStatement pstmt = conn.prepareStatement(insertDepartmentSQL); 
 
             pstmt.setInt(1, departmentID);
@@ -225,12 +316,20 @@ public class DbConnection {
 
     public void FileServiceRequest(int accountID, int staffID, int serviceID, String dateFiled, 
                                     String address, String serviceDesc){
-        String insertServiceRequestSQL = 
-        "INSERT INTO ServiceRequest (CitizenID, StaffID, ServiceID, DateFiled, Address, ServicDesc, RequestStatus) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String insertServiceRequestSQL = """
+        INSERT INTO ServiceRequest (
+        CitizenID, 
+        StaffID, 
+        ServiceID, 
+        DateFiled, 
+        Address, 
+        ServiceDesc, 
+        RequestStatus) 
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+                """;
+
 
         try {
-            conn = getConnection();
-
             PreparedStatement pstmt = conn.prepareStatement(insertServiceRequestSQL);
 
             pstmt.setInt(1, accountID);
@@ -251,6 +350,8 @@ public class DbConnection {
     
     
     }
+
+    
 
 
     
