@@ -14,31 +14,30 @@ public class CitizenMenu {
         p.add(new JLabel("Citizen Page (placeholder)", SwingConstants.CENTER), BorderLayout.CENTER);
 
         //what buttonPanel looks
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 30, 0)); // 30px horizontal gap between buttons
-        buttonPanel.setAlignmentX(JPanel.CENTER_ALIGNMENT); // Center the button panel in the BoxLayout
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 30, 0));
+        buttonPanel.setAlignmentX(JPanel.CENTER_ALIGNMENT);
         buttonPanel.setBackground(Color.pink); //TODO placeholder
         p.add(buttonPanel);
 
         JButton fileRequestBtn = new JButton("File New Service Request");
         fileRequestBtn.addActionListener(new ActionListener() {
             @Override public void actionPerformed(ActionEvent e) {
-                // app.showCard("fileRequestForm");
-                System.out.println("Switching to File New Service Request Form...");
+                app.showCard("newRequest");
             }
         });
+        
         buttonPanel.add(fileRequestBtn);
 
         JButton viewRequestsBtn = new JButton("View Your Service Requests");
         viewRequestsBtn.addActionListener(new ActionListener() {
             @Override public void actionPerformed(ActionEvent e) {
-                System.out.println("Switching to View Your Service Requests page...");
+                app.showCard("viewCitizenRequest");
             }
         });
         buttonPanel.add(viewRequestsBtn);
 
-
         JPanel bottom = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        bottom.setBackground(Color.blue); //TODO placeholder
+        bottom.setBackground(Color.blue);
         JButton back = new JButton("Back");
         back.addActionListener(new ActionListener() {
             @Override public void actionPerformed(ActionEvent e) {

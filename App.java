@@ -52,6 +52,10 @@ public class App {
         cardPanel.add(CitizenMenu.createPanel(this), "citizen");
         cardPanel.add(StaffMenu.createPanel(this), "staff");
 
+        // pages for CitizenMenu
+        cardPanel.add(FileNewRequest.createPanel(this), "newRequest");
+        cardPanel.add(CitizenViewRequest.createPanel(this), "viewCitizenRequest");
+
         cards.show(cardPanel, "choice");
         return cardPanel;
     }
@@ -147,6 +151,8 @@ public class App {
     public void onShowChoice(ActionEvent e) { 
         showCard("choice"); 
     }
+
+    //TODO add onShow functions for the two citizenMenu cards?
 
     public void showProfileFromStaff() { 
         profileReturn = "staff"; showCard("profile"); 
