@@ -48,7 +48,7 @@ public class App {
 
         // choice + login + register panels are provided by LoginRegis
         cardPanel.add(LoginRegis.createChoicePanel(this), "choice");
-        cardPanel.add(LoginRegis.createLoginPanel(this), "login");
+        cardPanel.add(LoginRegis.createLoginPanel(this, db), "login");
         cardPanel.add(LoginRegis.createRegisterPanel(this, db), "register");
 
         // Profile Page

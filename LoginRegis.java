@@ -80,7 +80,7 @@ public class LoginRegis {
     }
 
     // creates the Login form panel
-    public static JPanel createLoginPanel(final App app) {
+    public static JPanel createLoginPanel(final App app, DbConnection db) {
         JPanel loginForm = new JPanel(new GridBagLayout());
         GridBagConstraints l = new GridBagConstraints();
         l.insets = new Insets(6, 6, 6, 6);
@@ -109,10 +109,20 @@ public class LoginRegis {
         JButton doLogin = new JButton("Login");
         doLogin.addActionListener(new ActionListener() {
             @Override public void actionPerformed(ActionEvent e) {
-                String email = emailField.getText().trim();
-                JOptionPane.showMessageDialog(app.getFrame(),
-                    "Attempt login for: " + email,
+                String loginEmail = emailField.getText().trim();
+                String loginPassword = new String(passField.getPassword());
+
+                if (db.CitizenLogin(loginEmail, loginPassword)) {
+                    JOptionPane.showMessageDialog(app.getFrame(),
+                    db.getCitizenLoginName(loginEmail, loginPassword),
                     "Login", JOptionPane.INFORMATION_MESSAGE);
+                }
+
+                /* 
+                JOptionPane.showMessageDialog(app.getFrame(),
+                    "Attempt login for: " + loginEmail,
+                    "Login", JOptionPane.INFORMATION_MESSAGE);
+                */
             }
         });
         loginBtns.add(backFromLogin);
