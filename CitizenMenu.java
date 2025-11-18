@@ -13,14 +13,13 @@ public class CitizenMenu {
         JPanel p = new JPanel(new BorderLayout());
         p.add(new JLabel("Citizen Page (placeholder)", SwingConstants.CENTER), BorderLayout.CENTER);
 
-        /*
+        //what buttonPanel looks
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 30, 0)); // 30px horizontal gap between buttons
         buttonPanel.setAlignmentX(JPanel.CENTER_ALIGNMENT); // Center the button panel in the BoxLayout
+        buttonPanel.setBackground(Color.pink); //TODO placeholder
+        p.add(buttonPanel);
 
-        // 3. File Service Request Button
         JButton fileRequestBtn = new JButton("File New Service Request");
-        fileRequestBtn.setPreferredSize(new Dimension(250, 60)); 
-        fileRequestBtn.setFont(fileRequestBtn.getFont().deriveFont(16f));
         fileRequestBtn.addActionListener(new ActionListener() {
             @Override public void actionPerformed(ActionEvent e) {
                 // app.showCard("fileRequestForm");
@@ -28,21 +27,15 @@ public class CitizenMenu {
             }
         });
         buttonPanel.add(fileRequestBtn);
-         */
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 30, 0)); // 30px horizontal gap between buttons
-        buttonPanel.setAlignmentX(JPanel.CENTER_ALIGNMENT); // Center the button panel in the BoxLayout
-        buttonPanel.setBackground(Color.pink);
 
-        JButton fileRequestBtn = new JButton("File New Service Request");
-        
-        fileRequestBtn.addActionListener(new ActionListener() {
+        JButton viewRequestsBtn = new JButton("View Your Service Requests");
+        viewRequestsBtn.addActionListener(new ActionListener() {
             @Override public void actionPerformed(ActionEvent e) {
-                // app.showCard("fileRequestForm");
-                System.out.println("Switching to File New Service Request Form...");
+                System.out.println("Switching to View Your Service Requests page...");
             }
         });
+        buttonPanel.add(viewRequestsBtn);
 
-        buttonPanel.add(fileRequestBtn);
 
         JPanel bottom = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         bottom.setBackground(Color.blue); //TODO placeholder
