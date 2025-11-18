@@ -1,6 +1,11 @@
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
-import javax.swing.*;
+import java.awt.event.ActionListener;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.SwingConstants;
 
 public class CitizenMenu {
     public static JPanel createPanel(final App app) {
@@ -9,7 +14,11 @@ public class CitizenMenu {
 
         JPanel bottom = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton back = new JButton("Back");
-        back.addActionListener((ActionEvent e) -> app.showCard("choice"));
+        back.addActionListener(new ActionListener() {
+            @Override public void actionPerformed(ActionEvent e) {
+                app.showCard("choice");
+            }
+        });
         bottom.add(back);
         p.add(bottom, BorderLayout.SOUTH);
 

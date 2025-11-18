@@ -1,5 +1,11 @@
-import java.awt.*;
-import javax.swing.*;
+import java.awt.BorderLayout;
+import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.SwingConstants;
 
 public class StaffMenu {
     public static JPanel createPanel(final App app) {
@@ -7,7 +13,11 @@ public class StaffMenu {
         p.add(new JLabel("Staff Page (placeholder)", SwingConstants.CENTER), BorderLayout.CENTER);
         JPanel bottom = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton back = new JButton("Back");
-        back.addActionListener(e -> app.showCard("choice"));
+        back.addActionListener(new ActionListener() {
+            @Override public void actionPerformed(ActionEvent e) {
+                app.showCard("choice");
+            }
+        });
         bottom.add(back);
         p.add(bottom, BorderLayout.SOUTH);
         return p;
