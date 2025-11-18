@@ -4,12 +4,10 @@ public class Main {
 
     public static void main(String[] args) {
 
+        System.out.println("amogus");
+
         DbConnection db = new DbConnection();
 
-        System.out.println("amogus");
-        System.out.println("Testing Connection...");
-        db.getConnection();
-        
         SwingUtilities.invokeLater(new Runnable() {
             @Override public void run() {
                 new App().start();

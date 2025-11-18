@@ -6,13 +6,21 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 public class DbConnection {
-    private final String URL = "jdbc:mysql://localhost:3306/CCINFOM_DB";
+    private final String URL = "";      //rightclick an SQL connection and click "Copy JDBC Connection String to Clickboard"
     private final String USER = "root";
-    private final String PASSWORD = "-Keion12012004";
+    private final String PASSWORD = ""; //whatever password you have
     //private static final String PASSWORD = "[insert password]";
     //private static final String PASSWORD = "[insert password]";
 
     private Connection conn = null;
+
+    //this is contrsutctor
+    public DbConnection(){
+        System.out.println("Testing Connection...");
+        getConnection();
+        System.out.println("Initializing Database"); //TODO placeholders
+        initializeDatabase();
+    }
 
     //establishes a connection with the database
     public Connection getConnection(){
@@ -99,7 +107,7 @@ public class DbConnection {
     """
     CREATE TABLE IF NOT EXISTS Department (
     DepartmentID INT, 
-    DepartmentName VARCHAR(100)
+    DepartmentName VARCHAR(100),
     PRIMARY KEY (DepartmentID))
     """;
 
@@ -129,6 +137,7 @@ public class DbConnection {
     """;
 
     //schema and table initializer
+    //TODO Kuya Drei told me to make it private
     public void initializeDatabase() {
         try{
             Statement stmt = conn.createStatement(); 
@@ -136,12 +145,20 @@ public class DbConnection {
             stmt.execute(CreateDatabase);
             stmt.execute(SelectSchema);
             stmt.execute(CreateTableCitizen);
-            stmt.execute(CreateTableStaff);
-            stmt.execute(CreateTableService);
-            stmt.execute(CreateTableServiceRequest);
+            System.out.println("CreateTableCitizen");
             stmt.execute(CreateTableDepartment);
+            System.out.println("CreateTableDepartment");
+            stmt.execute(CreateTableService);
+            System.out.println("CreateTableService");
+            stmt.execute(CreateTableStaff);
+            System.out.println("CreateTableStaff");
+            stmt.execute(CreateTableServiceRequest);
+            System.out.println("CreateTableServiceRequest");
             stmt.execute(CreateTableAssignmentResolution);
+            System.out.println("CreateTableAssignmentResolution");
             stmt.execute(CreateTableReopenRequest);
+            System.out.println("CreateTableReopenRequest");
+            //TODO placeholders I used just to test initializeDatabase, reordered stmt's
 
             System.out.println("Database and tables initialized successfully.");
         } catch (SQLException e) {
