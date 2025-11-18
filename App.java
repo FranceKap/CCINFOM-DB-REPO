@@ -40,9 +40,6 @@ public class App {
         JPanel topBar = new JPanel(new BorderLayout());
         topBar.setBorder(BorderFactory.createEmptyBorder(6,6,6,6));
 
-        JLabel title = new JLabel("My App");
-        topBar.add(title, BorderLayout.WEST);
-
         JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
         fsToggle = new JButton("Fullscreen");
         fsToggle.addActionListener(this::onToggleFullscreen);
