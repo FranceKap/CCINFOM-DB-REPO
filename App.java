@@ -66,16 +66,17 @@ public class App {
     private JPanel createChoicePanel() {
         JPanel choice = new JPanel(new GridBagLayout());
         GridBagConstraints gc = new GridBagConstraints();
-        gc.insets = new Insets(8,8,8,8);
+        gc.insets = new Insets(8, 8, 8, 8);
 
-        JPanel col = new JPanel(new GridLayout(2,1,8,12));
+        JPanel col = new JPanel(new GridLayout(2, 1, 8, 12));
+
         JButton bLogin = new JButton("Login");
         bLogin.setPreferredSize(new Dimension(160, 36));
-        bLogin.addActionListener(this::onShowLogin);
+        bLogin.addActionListener(e -> showCard("login"));      // directly show login card
 
         JButton bRegister = new JButton("Register");
         bRegister.setPreferredSize(new Dimension(160, 36));
-        bRegister.addActionListener(this::onShowRegister);
+        bRegister.addActionListener(e -> showCard("register")); // directly show register card
 
         col.add(bLogin);
         col.add(bRegister);
@@ -103,12 +104,7 @@ public class App {
         return dev;
     }
 
-    // navigation handlers
-    private void onShowLogin(ActionEvent e)   { showCard("login"); }
-    private void onShowRegister(ActionEvent e){ showCard("register"); }
-    private void onShowCitizen(ActionEvent e) { showCard("citizen"); }
-    private void onShowStaff(ActionEvent e)   { showCard("staff"); }
-
+    
     public void showCard(String name) {
         if (cards != null && cardPanel != null) cards.show(cardPanel, name);
     }
