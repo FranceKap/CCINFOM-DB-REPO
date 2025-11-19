@@ -62,7 +62,7 @@ public class StaffMenu {
         bReports.setPreferredSize(btnSize);
 
         bRequests.addActionListener(new ActionListener() {
-            @Override public void actionPerformed(ActionEvent e) { app.showCard("choice"); }
+            @Override public void actionPerformed(ActionEvent e) { app.showCard("staffAssignedRequests"); }
         });
         bAvailability.addActionListener(new ActionListener() {
             @Override public void actionPerformed(ActionEvent e) { app.showCard("choice"); }
