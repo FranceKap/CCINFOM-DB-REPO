@@ -10,7 +10,7 @@ public class DbConnection {
     // connect directly to the application schema so inserts go to the correct DB
     private final String URL = "jdbc:mysql://127.0.0.1:3306/?user=root";
     private final String USER = "root";
-    private static final String PASSWORD = "FonupaK518_";
+    private final String PASSWORD = "wispY_346126";
 
     private Connection conn = null;
 
@@ -415,8 +415,8 @@ String InsertServicesDept5 = """
     }
 
 
-    public void InputServiceRequest(int accountID, int serviceID, String address, String serviceDesc){
-        //search for staffID WHERE availability > 0
+    public void InputServiceRequest(int accountID, int serviceID, int departmentID, String address, String serviceDesc){
+        //search for staffID WHERE availability > 0 AND staff.departmentID == departmentID
         int staffID = 0; //TODO temporary
 
         //dateFiled

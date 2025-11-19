@@ -40,12 +40,30 @@ public class FileNewRequest {
         form.add(new JLabel("Service Type:"), c);
         c.gridx = 1; c.weightx = 1.0;
         String[] serviceOptions = {"1: General Maintenance", "2: Sanitation", "3: Street Lights", "4: Public Safety"};
+        //should access service database
         JComboBox<String> serviceBox = new JComboBox<>(serviceOptions);
         serviceBox.setEditable(false);
         form.add(serviceBox, c);
+        
+
+        //Input Department
+        c.gridx = 0; c.gridy = 2; c.weightx = 0;
+        form.add(new JLabel("Department:"), c);
+        c.gridx = 1; c.weightx = 1.0;
+        String[] departmentOptions = {"1: Department of Engineering and Public Works",
+        "2: City General Services Office",
+        "3: Department of Public Services",
+        "4: Public Recreations Bureau ",
+        "5: Parks Development Office"
+        };
+        //should access department database
+        JComboBox<String> departmentBox = new JComboBox<>(departmentOptions);
+        departmentBox.setEditable(false);
+        form.add(departmentBox, c);
+        
 
         //Input Description
-        c.gridx = 0; c.gridy = 2; c.weightx = 0;
+        c.gridx = 0; c.gridy = 3; c.weightx = 0;
         c.anchor = GridBagConstraints.NORTHWEST;
         form.add(new JLabel("Description:"), c);
         c.gridx = 1; c.weightx = 1.0;
@@ -78,6 +96,19 @@ public class FileNewRequest {
                 String address = addressField.getText().trim();
                 String description = descArea.getText().trim();
                 
+                
+                String selectedDepartment = (String) departmentBox.getSelectedItem();
+                int departmentId = 1; // Default
+                try {
+                    if (selectedDepartment != null && selectedDepartment.contains(":")) {
+                        departmentId = Integer.parseInt(selectedDepartment.split(":")[0].trim());
+                    } else if (selectedDepartment != null) {
+                        departmentId = Integer.parseInt(selectedDepartment);
+                    }
+                } catch (NumberFormatException ex) {
+                    departmentId = 1;
+                }
+
                 // Parse Service ID from combo box string (e.g., "1: General..." -> 1)
                 String selectedService = (String) serviceBox.getSelectedItem();
                 int serviceId = 1; // Default
@@ -96,7 +127,7 @@ public class FileNewRequest {
                     return;
                 }
 
-                db.InputServiceRequest(currentUser.getID(), serviceId, address, selectedService);
+                db.InputServiceRequest(currentUser.getID(), serviceId, departmentId, address, description);
 
                 JOptionPane.showMessageDialog(app.getFrame(), "Request submitted successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
                 
