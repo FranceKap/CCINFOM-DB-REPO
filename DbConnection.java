@@ -5,6 +5,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DbConnection {
     // connect directly to the application schema so inserts go to the correct DB
@@ -441,7 +443,7 @@ String InsertServicesDept5 = """
 
     public void InputServiceRequest(int accountID, int serviceID, int departmentID, String address, String serviceDesc){
         //search for staffID WHERE availability > 0 AND staff.departmentID == departmentID
-        int staffID = 0; //TODO temporary
+        int staffID = 1; //TODO temporary
 
         //dateFiled
         String currentDate = LocalDate.now().toString();
@@ -485,7 +487,22 @@ String InsertServicesDept5 = """
     
     }
 
-    
+    // Add this method to DbConnection.java
+    public List<String> getServiceNames() {
+        String sql = "SELECT ServiceName FROM Service ORDER BY ServiceName";
+        List<String> serviceNames = new ArrayList<>();
+        try (PreparedStatement pstmt = conn.prepareStatement(sql);
+            ResultSet rs = pstmt.executeQuery()) {
+            
+            while (rs.next()) {
+                serviceNames.add(rs.getString("ServiceName"));
+            }
+        } catch (SQLException e) {
+            System.err.println("Error fetching service names: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return serviceNames;
+    }
 
 
     

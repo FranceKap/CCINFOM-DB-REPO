@@ -24,7 +24,7 @@ public class CitizenMenu {
         topRight.add(viewProfile);
         p.add(topRight, BorderLayout.NORTH);
 
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 30, 0));
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 30, 150));
         buttonPanel.setAlignmentX(JPanel.CENTER_ALIGNMENT);
         p.add(buttonPanel);
 

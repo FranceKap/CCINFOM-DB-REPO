@@ -6,6 +6,8 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.List;
+
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -35,16 +37,19 @@ public class FileNewRequest {
         JTextField addressField = new JTextField(30);
         form.add(addressField, c);
 
-        // Input Service
         c.gridx = 0; c.gridy = 1; c.weightx = 0;
         form.add(new JLabel("Service Type:"), c);
         c.gridx = 1; c.weightx = 1.0;
-        String[] serviceOptions = {"1: General Maintenance", "2: Sanitation", "3: Street Lights", "4: Public Safety"};
-        //should access service database
-        JComboBox<String> serviceBox = new JComboBox<>(serviceOptions);
-        serviceBox.setEditable(false);
-        form.add(serviceBox, c);
         
+        List<String> serviceNames = db.getServiceNames();
+        JComboBox<String> serviceBox = new JComboBox<>();
+        serviceBox.setEditable(false);
+        
+        for (String serviceName : serviceNames) {
+            serviceBox.addItem(serviceName);
+        }
+        
+        form.add(serviceBox, c);
 
         //Input Department
         c.gridx = 0; c.gridy = 2; c.weightx = 0;
