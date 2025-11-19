@@ -1,18 +1,24 @@
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+<<<<<<< Updated upstream
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+=======
+import java.sql.Types;
+>>>>>>> Stashed changes
 
 public class DbConnection {
     // connect directly to the application schema so inserts go to the correct DB
     private final String URL = "jdbc:mysql://127.0.0.1:3306/?user=root";
     private final String USER = "root";
-    private final String PASSWORD = "wispY_346126";
+    // private final String PASSWORD = "wispY_346126";
+    private final String PASSWORD = "-Keion12012004";
 
     private Connection conn = null;
 
@@ -103,7 +109,8 @@ public class DbConnection {
 
     String CreateTableService =
     """
-    CREATE TABLE IF NOT EXISTS Service (
+    DROP TABLE Service IF EXISTS;
+    CREATE TABLE Service (
     ServiceID INT AUTO_INCREMENT, 
     ServiceName VARCHAR(100), 
     ServiceType VARCHAR(50), 
@@ -132,7 +139,8 @@ public class DbConnection {
 
     String CreateTableDepartment =
     """
-    CREATE TABLE IF NOT EXISTS Department (
+    DROP TABLE Department IF EXISTS;
+    CREATE TABLE Department (
     DepartmentID INT, 
     DepartmentName VARCHAR(100),
     PRIMARY KEY (DepartmentID))
@@ -378,85 +386,181 @@ String InsertServicesDept5 = """
         }
     }
 
-    public boolean StaffLogin(int staffID, String password){
+    public User StaffLogin(int staffID, String password){
         String selectStaffSQL = """
         SELECT * 
         FROM Staff 
         WHERE StaffID = ? AND Password = ?
                 """;
-        try (PreparedStatement pstmt = conn.prepareStatement(selectStaffSQL)) {
+        try{
+            PreparedStatement pstmt = conn.prepareStatement(selectStaffSQL);
+
             pstmt.setInt(1, staffID);
             pstmt.setString(2, password);
-            try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) {
-                    System.out.println("Login successful. Welcome, " + rs.getString("FirstName") + " " + rs.getString("LastName") + "!");
-                    return true;
-                } else {
-                    System.out.println("Login failed. Invalid Staff ID or password.");
-                    return false;
-                }
+
+            ResultSet rs = pstmt.executeQuery();
+
+            if(rs.next()){
+                int userID = rs.getInt("StaffID");
+                String userLastName = rs.getString("LastName");
+                String userFirstName = rs.getString("FirstName");
+                int userNbr = rs.getInt("ContactNbr");
+
+                System.out.println("Login successful. Welcome, " + rs.getString("FirstName") + " " + rs.getString("LastName") + "!");
+
+                return new User(userID, userLastName, userFirstName, userNbr);
+            } else {
+                System.out.println("Login failed. Invalid Staff ID or password.");
+                return null;
             }
         } catch (SQLException e){
             System.err.println("Error during staff login: " + e.getMessage());
-            return false;
+            return null;
         }
     }
 
 
-    // methods for inserting data into service, departments and service requests
-    public void CreateService(String serviceName,String serviceType, int departmentID) {
+    //methods for inserting data into service, departments and service requests
+    public boolean CreateService(String serviceName,String serviceType, int departmentID) {
         String insertServiceSQL = """
         INSERT INTO Service (
         ServiceName, 
         ServiceType, 
         DepartmentID) 
-        VALUES (?, ?, ?)
+        SELECT ?, ?, ? 
+        WHERE NOT EXISTS
+        (SELECT 1
+        FROM Service
+        WHERE ServiceName = ?
+        AND DepartmentID = ?)
                 """;
-        try (PreparedStatement pstmt = conn.prepareStatement(insertServiceSQL)) {
+        try{
+             PreparedStatement pstmt = conn.prepareStatement(insertServiceSQL); 
+
             pstmt.setString(1, serviceName);
             pstmt.setString(2, serviceType);
             pstmt.setInt(3, departmentID);
+            pstmt.setString(4, serviceName);
+            pstmt.setInt(5, departmentID);
+
             pstmt.executeUpdate();
+
             System.out.println("Service creation successful.");
+            return true;
         } catch (SQLException e) {
             System.err.println("Service creation error: " + e.getMessage());
+            return false;
         }
     }
 
-    public void CreateDepartment(int departmentID, String departmentName) {
+    public boolean CreateDepartment(int departmentID, String departmentName) {
         String insertDepartmentSQL = """
         INSERT INTO Department (
         DepartmentID, 
         DepartmentName) 
-        VALUES (?, ?)
+        SELECT ?, ?
+        WHERE NOT EXISTS (
+        SELECT 1
+        FROM Department
+        WHERE DepartmentID = ?)
                 """;
-        try (PreparedStatement pstmt = conn.prepareStatement(insertDepartmentSQL)) {
+        try{
+            PreparedStatement pstmt = conn.prepareStatement(insertDepartmentSQL); 
+
             pstmt.setInt(1, departmentID);
             pstmt.setString(2, departmentName);
+            pstmt.setInt(3, departmentID);
+
             pstmt.executeUpdate();
+
             System.out.println("Department creation successful.");
+            return true;
         } catch (SQLException e) {
             System.err.println("Department creation error: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /*
+     * Helpers
+     */
+
+    private Date parseDate(String dateStr){
+        // Assumes dateStr is in ISO format: "yyyy-MM-dd"
+        if (dateStr == null) {
+            return null;
+        }
+        try{
+            return Date.valueOf(dateStr);
+        } catch (IllegalArgumentException e){
+            System.err.println("Invalid date format: " + e.getMessage());
+            return null;
         }
     }
 
 
+<<<<<<< Updated upstream
     public void InputServiceRequest(int accountID, int serviceID, int departmentID, String address, String serviceDesc){
         //search for staffID WHERE availability > 0 AND staff.departmentID == departmentID
         int staffID = 1; //TODO temporary
+=======
+>>>>>>> Stashed changes
 
-        //dateFiled
-        String currentDate = LocalDate.now().toString();
-        FileServiceRequest(accountID, staffID, serviceID, currentDate, address, serviceDesc);
-        //FileServiceRequest(accountID, [staffID], serviceID, [dateFiled], address, serviceDesc)
+
+    /*
+     * Methods used in Transaction 1
+     * Filing a service request
+     */
+
+    public boolean validateCitizen(int citizenID){
+        String validateCitizenSQL = """
+        SELECT 1 
+        FROM Citizen 
+        WHERE AccountID = ?
+                """;
+        try {
+            PreparedStatement pstmt = conn.prepareStatement(validateCitizenSQL);
+            pstmt.setInt(1, citizenID);
+            ResultSet rs = pstmt.executeQuery();
+            return rs.next();
+        } catch (SQLException e) {
+            System.err.println("Error validating citizen ID: " + e.getMessage());
+            return false;
+        }
     }
 
-
-    public void FileServiceRequest(int accountID, int staffID, int serviceID, String dateFiled, 
+    public boolean validateService(int serviceID){
+        String validateServiceSQL = """
+        SELECT 1
+        FROM Service
+        WHERE ServiceID = ?
+                """;
+        try {
+            PreparedStatement pstmt = conn.prepareStatement(validateServiceSQL);
+            pstmt.setInt(1, serviceID);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            System.err.println("Error validating service ID: " + e.getMessage());
+            return false;
+        }
+    }
+    public boolean FileServiceRequest(int accountID, int staffID, int serviceID, String dateFiled, 
                                     String address, String serviceDesc){
+        
+        if (!validateCitizen(accountID)){
+            System.out.println("Invalid Citizen ID.");
+            return false;
+        }
+        if (!validateService(serviceID)){
+            System.out.println("Invalid Service ID.");
+            return false;
+        }
+
         String insertServiceRequestSQL = """
         INSERT INTO ServiceRequest (
-        AccountID, 
+        CitizenID, 
         StaffID, 
         ServiceID, 
         DateFiled, 
@@ -466,10 +570,12 @@ String InsertServicesDept5 = """
         VALUES (?, ?, ?, ?, ?, ?, ?)
                 """;
 
+        
+        try {
+            PreparedStatement pstmt = conn.prepareStatement(insertServiceRequestSQL);
 
-        try (PreparedStatement pstmt = conn.prepareStatement(insertServiceRequestSQL)) {
             pstmt.setInt(1, accountID);
-            pstmt.setInt(2, staffID);
+            pstmt.setNull(2, Types.INTEGER); // No staff assigned
             pstmt.setInt(3, serviceID);
             pstmt.setString(4, dateFiled);
             pstmt.setString(5, address);
@@ -479,13 +585,294 @@ String InsertServicesDept5 = """
             pstmt.executeUpdate();
 
             System.out.println("Service request filed.");
-
+            return true;
         } catch (SQLException e) {
             System.err.println("Error filing service request: " + e.getMessage());
+            return false;
         }
-    
-    
+        
     }
+    
+        /*
+         * Methods used in Transaction 2
+         * Updating service request status
+         */
+
+    public boolean checkStaffAvailability(int staffID){
+        String sql = """
+            SELECT Availability 
+            FROM Staff
+            WHERE StaffID = ?
+            """;
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, staffID);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("Availability") > 0;
+            }
+            return false;
+        } catch (SQLException e) {
+            System.err.println("Error checking staff availability: " + e.getMessage());
+            return false;
+        }
+    }
+
+
+    public boolean validateDepartmentMatch(int staffID, int serviceID){
+        String sql = """
+            SELECT 1
+            FROM Staff s
+            JOIN Service v ON s.DepartmentID = v.DepartmentID
+            WHERE s.StaffID = ? AND v.ServiceID = ?
+            """;
+
+        try (
+            PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, staffID);
+            pstmt.setInt(2, serviceID);
+            ResultSet rs = pstmt.executeQuery();
+
+            return rs.next();
+
+        } catch (SQLException e) {
+            System.err.println("Error validating department match: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean assignStaffToRequest(int requestID, int staffID){
+        
+        if (!checkStaffAvailability(staffID)){
+            System.out.println("Staff is not available.");
+            return false;
+        }
+
+        
+        int serviceID = getServiceIDFromRequest(requestID);
+        if (serviceID == -1){
+            System.out.println("Invalid request ID.");
+            return false;
+        }
+
+        
+        if (!validateDepartmentMatch(staffID, serviceID)){
+            System.out.println("Staff department does not match service department.");
+            return false;
+        }
+
+        
+        String sql = """
+            UPDATE ServiceRequest
+            SET StaffID = ?, RequestStatus = 'Assigned'
+            WHERE RequestID = ?
+            """;
+
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setInt(1, staffID);
+            pstmt.setInt(2, requestID);
+            pstmt.executeUpdate();
+
+            decreaseStaffAvailability(staffID);
+            return true;
+
+        } catch (SQLException e) {
+            System.err.println("Error assigning staff: " + e.getMessage());
+            return false;
+        }
+    }
+
+
+    public int getServiceIDFromRequest(int requestID){
+        String sql = """
+            SELECT ServiceID
+            FROM ServiceRequest
+            WHERE RequestID = ?
+            """;
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, requestID);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()){
+                return rs.getInt("ServiceID");
+            }
+            return -1;
+        } catch (SQLException e) {
+            System.err.println("Error fetching service ID: " + e.getMessage());
+            return -1;
+        }
+    }
+
+    public void decreaseStaffAvailability(int staffID){
+        String sql = """
+            UPDATE Staff
+            SET Availability = Availability - 1
+            WHERE StaffID = ?
+            """;
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, staffID);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println("Error decreasing staff availability: " + e.getMessage());
+        }
+    }
+
+
+    public void increaseStaffAvailability(int staffID){
+        String sql = """
+            UPDATE Staff
+            SET Availability = Availability + 1
+            WHERE StaffID = ?
+            """;
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, staffID);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println("Error increasing staff availability: " + e.getMessage());
+        }
+    }
+
+
+    public boolean updateRequestStatus(int requestID, String newStatus){
+        String sql = """
+            UPDATE ServiceRequest
+            SET RequestStatus = ?
+            WHERE RequestID = ?
+            """;
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, newStatus);
+            pstmt.setInt(2, requestID);
+            pstmt.executeUpdate();
+            return true;
+        } catch (SQLException e) {
+            System.err.println("Error updating request status: " + e.getMessage());
+            return false;
+        }
+    }
+
+
+    public boolean resolveRequest(int requestID, int staffID, String resolutionDate){
+        String sql = """
+            UPDATE ServiceRequest
+            SET RequestStatus = 'Resolved', 
+                DateResolved = ?
+            WHERE RequestID = ?
+            """;
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, resolutionDate);
+            pstmt.setInt(2, requestID);
+            pstmt.executeUpdate();
+
+            insertAssignmentResolution(requestID, staffID, resolutionDate);
+            increaseStaffAvailability(staffID);
+
+            return true;
+        } catch (SQLException e) {
+            System.err.println("Error resolving request: " + e.getMessage());
+            return false;
+        }
+    }
+
+
+    public boolean insertAssignmentResolution(int requestID, int staffID, String resolutionDate){
+        String sql = """
+            INSERT INTO AssignmentResolution (
+                RequestID,
+                StaffID,
+                ResolutionDate
+            )
+            VALUES (?, ?, ?)
+            """;
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, requestID);
+            pstmt.setInt(2, staffID);
+            pstmt.setString(3, resolutionDate);
+            pstmt.executeUpdate();
+            return true;
+        } catch (SQLException e) {
+            System.err.println("Error inserting resolution: " + e.getMessage());
+            return false;
+        }
+    }
+
+
+    /*
+     * Methods used in Transaction 3
+     * Reopening a Resolved Service Request
+     */
+
+
+    public boolean validateReopenEligibility(int requestID){
+        String sql = """
+            SELECT RequestStatus
+            FROM ServiceRequest
+            WHERE RequestID = ?
+            """;
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, requestID);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()){
+                return rs.getString("RequestStatus").equals("Resolved");
+            }
+            return false;
+        } catch (SQLException e) {
+            System.err.println("Error validating reopen eligibility: " + e.getMessage());
+            return false;
+        }
+    }
+
+
+    public boolean reopenRequest(int requestID, int citizenID, String reason, String reopenDate){
+        if (!validateReopenEligibility(requestID)){
+            System.out.println("Request cannot be reopened.");
+            return false;
+        }
+
+        String sql = """
+            UPDATE ServiceRequest
+            SET RequestStatus = 'Reopened',
+                StaffID = NULL
+            WHERE RequestID = ?
+            """;
+
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, requestID);
+            pstmt.executeUpdate();
+
+            recordReopenReason(requestID, citizenID, reason, reopenDate);
+            return true;
+        } catch (SQLException e) {
+            System.err.println("Error reopening request: " + e.getMessage());
+            return false;
+        }
+    }
+
+
+    public boolean recordReopenReason(int requestID, int citizenID, String reason, String reopenDate){
+        String sql = """
+            INSERT INTO ReopenRequest (
+                RequestID,
+                CitizenID,
+                Reason,
+                ReopenDate
+            )
+            VALUES (?, ?, ?, ?)
+            """;
+
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, requestID);
+            pstmt.setInt(2, citizenID);
+            pstmt.setString(3, reason);
+            pstmt.setString(4, reopenDate);
+            pstmt.executeUpdate();
+            return true;
+        } catch (SQLException e) {
+            System.err.println("Error inserting reopen request: " + e.getMessage());
+            return false;
+        }
+    }
+
+
 
     // Add this method to DbConnection.java
     public List<String> getServiceNames() {
