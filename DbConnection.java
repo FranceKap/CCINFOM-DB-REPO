@@ -6,11 +6,11 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 public class DbConnection {
-    private final String URL = "jdbc:mysql://127.0.0.1:3306/?user=root";      //rightclick an SQL connection and click "Copy JDBC Connection String to Clickboard"
+    private final String URL = "";      //rightclick an SQL connection and click "Copy JDBC Connection String to Clickboard"
     private final String USER = "root";
-    private final String PASSWORD = "FonupaK518_"; //whatever password you have
+    private final String PASSWORD = ""; //whatever password you have
     //private static final String PASSWORD = "[insert password]";
-    //private static final String PASSWORD = "[insert password]";
+    //private static final String PASSWORD = "FonupaK518_";
 
     private Connection conn = null;
 
@@ -33,7 +33,9 @@ public class DbConnection {
             }
 
             conn = DriverManager.getConnection(URL, USER, PASSWORD);
-            System.out.println("Connection established successfully.");
+            // make sure autocommit is enabled (so inserts are committed immediately)
+            conn.setAutoCommit(true);
+            System.out.println("Connection established successfully (autocommit=" + conn.getAutoCommit() + ").");
         } catch (SQLException e) {
             System.err.println("Failed to establish connection: " + e.getMessage());
             e.printStackTrace();
@@ -139,11 +141,14 @@ public class DbConnection {
     //schema and table initializer
     //TODO Kuya Drei told me to make it private
     public void initializeDatabase() {
-        try{
-            Statement stmt = conn.createStatement(); 
-
+        if (conn == null) {
+            System.err.println("Cannot initialize database: connection is null.");
+            return;
+        }
+        try (Statement stmt = conn.createStatement()) {
+            // CreateDatabase is harmless if DB exists; we connect directly to ccinfom_db via URL,
+            // so no need to run "USE ccinfom_db". Keep create schema so first-run still works.
             stmt.execute(CreateDatabase);
-            stmt.execute(SelectSchema);
             stmt.execute(CreateTableCitizen);
             System.out.println("CreateTableCitizen");
             stmt.execute(CreateTableDepartment);
@@ -158,11 +163,10 @@ public class DbConnection {
             System.out.println("CreateTableAssignmentResolution");
             stmt.execute(CreateTableReopenRequest);
             System.out.println("CreateTableReopenRequest");
-            //TODO placeholders I used just to test initializeDatabase, reordered stmts
-
             System.out.println("Database and tables initialized successfully.");
         } catch (SQLException e) {
             System.err.println("Error initializing database: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -181,21 +185,25 @@ public class DbConnection {
         VALUES (?, ?, ?, ?, ?, ?)                
                 """;
         
-        try{
-            PreparedStatement pstmt = conn.prepareStatement(insertCitizenSQL);
-
-            //value setters
+        if (conn == null) {
+            System.err.println("Cannot register: DB connection is null.");
+            return;
+        }
+        try (PreparedStatement pstmt = conn.prepareStatement(insertCitizenSQL)) {
             pstmt.setString(1, firstName);
             pstmt.setString(2, lastName);
             pstmt.setLong(3, contactNbr);
             pstmt.setString(4, email);
             pstmt.setString(5, address);
             pstmt.setString(6, password);
-
-            pstmt.executeUpdate();
-            System.out.println("Registeration successful.");
+            int rows = pstmt.executeUpdate();
+            System.out.println("Registration: rows affected = " + rows);
+            if (rows == 0) {
+                System.err.println("Insert returned 0 rows. Check table/schema permissions and that 'USE ccinfom_db' applied.");
+            }
         } catch (SQLException e) {
             System.err.println("Registration error: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -205,30 +213,26 @@ public class DbConnection {
         FROM Citizen 
         WHERE Email = ? AND Password = ?
                 """;
-        try{
-            PreparedStatement pstmt = conn.prepareStatement(selectCitizenSQL);
-
+        // use try-with-resources to ensure PreparedStatement and ResultSet are closed
+        try (PreparedStatement pstmt = conn.prepareStatement(selectCitizenSQL)) {
             pstmt.setString(1, email);
             pstmt.setString(2, password);
-
-            ResultSet rs = pstmt.executeQuery();
-
-            if(rs.next()){
-                int userID = rs.getInt("AccountID");
-                String userLastName = rs.getString("LastName");
-                String userFirstName = rs.getString("FirstName");
-                long userNbr = rs.getLong("ContactNbr");
-
-                System.out.println("Login successful. Welcome, " + rs.getString("FirstName") + " " + rs.getString("LastName") + "!");
-
-                return new User(userID, userLastName, userFirstName, userNbr);
-            } 
-            else {
-                System.out.println("Login failed. Invalid email or password.");
-                return null;
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    int userID = rs.getInt("AccountID");
+                    String userLastName = rs.getString("LastName");
+                    String userFirstName = rs.getString("FirstName");
+                    long userNbr = rs.getLong("ContactNbr");
+                    System.out.println("Login successful. Welcome, " + userFirstName + " " + userLastName + "!");
+                    return new User(userID, userLastName, userFirstName, userNbr);
+                } else {
+                    System.out.println("Login failed. Invalid email or password.");
+                    return null;
+                }
             }
-        } catch (SQLException e){
+        } catch (SQLException e) {
             System.err.println("Error during citizen login: " + e.getMessage());
+            e.printStackTrace();
             return null;
         }
     }
@@ -275,21 +279,17 @@ public class DbConnection {
         Password) 
         VALUES (?, ?, ?, ?, ?)
                 """;
-        try{
-            PreparedStatement pstmt = conn.prepareStatement(insertStaffSQL);
-
+        try (PreparedStatement pstmt = conn.prepareStatement(insertStaffSQL)) {
             pstmt.setString(1, firstName);
             pstmt.setString(2, lastName);
             pstmt.setLong(3, contactNbr);
             pstmt.setString(4, availability);
             pstmt.setString(5, password);
-
-            pstmt.executeUpdate();
-
-            System.out.println("Registration successful.");
-
+            int rows = pstmt.executeUpdate();
+            System.out.println("Staff registration: rows affected = " + rows);
         } catch (SQLException e) {
             System.err.println("Registration Error: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -384,9 +384,7 @@ public class DbConnection {
                 """;
 
 
-        try {
-            PreparedStatement pstmt = conn.prepareStatement(insertServiceRequestSQL);
-
+        try (PreparedStatement pstmt = conn.prepareStatement(insertServiceRequestSQL)) {
             pstmt.setInt(1, accountID);
             pstmt.setInt(2, staffID);
             pstmt.setInt(3, serviceID);
@@ -394,13 +392,11 @@ public class DbConnection {
             pstmt.setString(5, address);
             pstmt.setString(6, serviceDesc);
             pstmt.setString(7, "Pending");
-
-            pstmt.executeUpdate();
-
-            System.out.println("Service request filed.");
-
+            int rows = pstmt.executeUpdate();
+            System.out.println("Service request filed. rows = " + rows);
         } catch (SQLException e) {
             System.err.println("Error filing service request: " + e.getMessage());
+            e.printStackTrace();
         }
     
     
