@@ -23,7 +23,7 @@ public class DbConnection {
     }
 
     //establishes a connection with the database
-    public Connection getConnection(){
+    private Connection getConnection(){
         try {
             try {
                 Class.forName("com.mysql.cj.jdbc.Driver");
@@ -68,7 +68,7 @@ public class DbConnection {
     FirstName VARCHAR(50), 
     LastName VARCHAR(50), 
     ContactNbr INT, 
-    Availability VARCHAR(50), 
+    Availability INT, 
     Password VARCHAR(50),
     PRIMARY KEY (StaffID),
     FOREIGN KEY (DepartmentID) REFERENCES Department(DepartmentID))
@@ -138,7 +138,7 @@ public class DbConnection {
 
     //schema and table initializer
     //TODO Kuya Drei told me to make it private
-    public void initializeDatabase() {
+    private void initializeDatabase() {
         try{
             Statement stmt = conn.createStatement(); 
 
@@ -169,7 +169,12 @@ public class DbConnection {
 
 
     //methods for user login and registration
-    public void CitizenRegister(String firstName, String lastName, int contactNbr, String email, String address, String password) {
+    public boolean CitizenRegister(String firstName, String lastName, int contactNbr, String email, String address, String password) {
+        String checkSql = """
+        SELECT 1 
+        FROM Citizen 
+        WHERE Email = ?
+                """;        
         String insertCitizenSQL = """
         INSERT INTO Citizen (
         FirstName, 
@@ -183,7 +188,14 @@ public class DbConnection {
         
         try{
             PreparedStatement pstmt = conn.prepareStatement(insertCitizenSQL);
-
+            PreparedStatement check = conn.prepareStatement(checkSql);
+            
+            check.setString(1, email);
+            ResultSet rs = check.executeQuery();
+            if(rs.next()){
+                System.out.println("Registration failed. Email already in use.");
+                return false;
+            }
             //value setters
             pstmt.setString(1, firstName);
             pstmt.setString(2, lastName);
@@ -193,9 +205,13 @@ public class DbConnection {
             pstmt.setString(6, password);
 
             pstmt.executeUpdate();
+
             System.out.println("Registeration successful.");
+            return true;
+
         } catch (SQLException e) {
             System.err.println("Registration error: " + e.getMessage());
+            return false;
         }
     }
 
@@ -232,63 +248,37 @@ public class DbConnection {
         }
     }
 
-    //gets CitizenLoginName
-    //i know it's inefficient and I copied it off of the function above but shhhhhh
-    public String getCitizenLoginName(String email, String password){
-        String getCitizenName = """
-        SELECT * 
-        FROM Citizen 
-        WHERE Email = ? AND Password = ?
-                """;
-        try{
-            PreparedStatement pstmt = conn.prepareStatement(getCitizenName);
 
-            pstmt.setString(1, email);
-            pstmt.setString(2, password);
-
-
-            ResultSet rs = pstmt.executeQuery();
-
-            if(rs.next()){
-                
-                //System.out.println("Login successful. Welcome, " + rs.getString("FirstName") + " " + rs.getString("LastName") + "!");
-                return "Login successful. Welcome, " + rs.getString("FirstName") + " " + rs.getString("LastName") + "!";
-            }
-            else{
-                return "Login failed. Invalid email or password.";
-            }
-            //surely it won't cause an invalid login error
-        } catch (SQLException e){
-            //System.err.println("Error during citizen login: " + e.getMessage());
-            return "Error during citizen login: " + e.getMessage();
-        }
-    }
-
-    public void StaffRegister(String firstName, String lastName, int contactNbr, String availability, String password) {
+    public boolean StaffRegister(String firstName, String lastName, int departmentID, int contactNbr, int availability, String password) {
         String insertStaffSQL = """
         INSERT INTO Staff (
         FirstName, 
         LastName, 
+        DepartmentID,
         ContactNbr, 
         Availability, 
         Password) 
         VALUES (?, ?, ?, ?, ?)
                 """;
+
         try{
             PreparedStatement pstmt = conn.prepareStatement(insertStaffSQL);
 
             pstmt.setString(1, firstName);
             pstmt.setString(2, lastName);
-            pstmt.setInt(3, contactNbr);
-            pstmt.setString(4, availability);
-            pstmt.setString(5, password);
+            pstmt.setInt(3, departmentID);
+            pstmt.setInt(4, contactNbr);
+            pstmt.setInt(5, 3);
+            pstmt.setString(6, password);
 
             pstmt.executeUpdate();
 
             System.out.println("Registration successful.");
+            return true;
 
         } catch (SQLException e) {
             System.err.println("Registration Error: " + e.getMessage());
+            return false;
         }
     }
 
@@ -381,7 +371,6 @@ public class DbConnection {
         RequestStatus) 
         VALUES (?, ?, ?, ?, ?, ?, ?)
                 """;
-
 
         try {
             PreparedStatement pstmt = conn.prepareStatement(insertServiceRequestSQL);
