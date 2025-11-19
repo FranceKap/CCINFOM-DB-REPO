@@ -9,6 +9,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
 public class CitizenMenu {
+    //yo
     public static JPanel createPanel(final App app) {
         JPanel p = new JPanel(new BorderLayout());
         p.add(new JLabel("Citizen Page (placeholder)", SwingConstants.CENTER), BorderLayout.CENTER);
