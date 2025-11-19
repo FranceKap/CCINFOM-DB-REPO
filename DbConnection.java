@@ -6,11 +6,11 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 public class DbConnection {
-    private final String URL = "";      //rightclick an SQL connection and click "Copy JDBC Connection String to Clickboard"
+    private final String URL = "jdbc:mysql://127.0.0.1:3306/?user=root";
     private final String USER = "root";
-    private final String PASSWORD = ""; //whatever password you have
-    //private static final String PASSWORD = "[insert password]";
-    //private static final String PASSWORD = "[insert password]";
+    private final String PASSWORD = "wispY_346126";
+    //private static final String PASSWORD = "FonupaK518_";
+    //private static final String PASSWORD = "-Keion12012004";
 
     private Connection conn = null;
 
