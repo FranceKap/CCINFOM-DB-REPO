@@ -6,6 +6,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DbConnection {
     // connect directly to the application schema so inserts go to the correct DB
@@ -842,5 +845,54 @@ String InsertServicesDept5 = """
             e.printStackTrace();
             return false;
         }
+    }
+
+    public List<String> getServiceNames() {
+        String sql = "SELECT ServiceName FROM Service ORDER BY ServiceName";
+        List<String> serviceNames = new ArrayList<>();
+        try (PreparedStatement pstmt = conn.prepareStatement(sql);
+            ResultSet rs = pstmt.executeQuery()) {
+            
+            while (rs.next()) {
+                serviceNames.add(rs.getString("ServiceName"));
+            }
+        } catch (SQLException e) {
+            System.err.println("Error fetching service names: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return serviceNames;
+    }
+
+    public void InputServiceRequest(int accountID, int serviceID, int departmentID, String address, String serviceDesc) {
+        int staffID = findAvailableStaff(departmentID);   // <– NEW LOGIC
+
+        // dateFiled
+        String currentDate = LocalDate.now().toString();
+
+        // call the main method
+        FileServiceRequest(accountID, staffID, serviceID, currentDate, address, serviceDesc);
+    }
+
+    public int findAvailableStaff(int departmentID) {
+        String sql = """
+            SELECT StaffID
+            FROM Staff
+            WHERE DepartmentID = ?
+            AND Availability > 0
+            LIMIT 1
+        """;
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, departmentID);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("StaffID");
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error searching for available staff: " + e.getMessage());
+        }
+
+        return 0; // no available staff → unassigned
     }
 }
