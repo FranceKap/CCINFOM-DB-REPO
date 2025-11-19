@@ -8,12 +8,22 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
 public class CitizenMenu {
-    //yo
     public static JPanel createPanel(final App app) {
         JPanel p = new JPanel(new BorderLayout());
         p.add(new JLabel("Citizen Page (placeholder)", SwingConstants.CENTER), BorderLayout.CENTER);
 
-        //what buttonPanel looks
+        // small top-right View Profile button so citizen can view their profile
+        JPanel topRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 8));
+        topRight.setOpaque(false);
+        JButton viewProfile = new JButton("View Profile");
+        viewProfile.addActionListener(new ActionListener() {
+            @Override public void actionPerformed(ActionEvent e) {
+                app.showProfileFromCitizen();
+            }
+        });
+        topRight.add(viewProfile);
+        p.add(topRight, BorderLayout.NORTH);
+
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 30, 0));
         buttonPanel.setAlignmentX(JPanel.CENTER_ALIGNMENT);
         p.add(buttonPanel);

@@ -33,7 +33,6 @@ public class DbConnection {
             }
 
             conn = DriverManager.getConnection(URL, USER, PASSWORD);
-            // make sure autocommit is enabled (so inserts are committed immediately)
             conn.setAutoCommit(true);
             System.out.println("Connection established successfully (autocommit=" + conn.getAutoCommit() + ").");
         } catch (SQLException e) {
@@ -41,6 +40,31 @@ public class DbConnection {
             e.printStackTrace();
         }
         return conn;
+    }
+
+    public boolean updateRequestStatus(int requestID, String newStatus) {
+        if (conn == null) {
+            System.err.println("Cannot update request status: DB connection is null.");
+            return false;
+        }
+        String sql = "UPDATE ServiceRequest SET RequestStatus = ? WHERE RequestID = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, newStatus);
+            pstmt.setInt(2, requestID);
+            int rows = pstmt.executeUpdate();
+            System.out.println("updateRequestStatus: rows affected = " + rows);
+            if (rows > 0 && "Resolved".equalsIgnoreCase(newStatus)) {
+                try (PreparedStatement p2 = conn.prepareStatement("UPDATE ServiceRequest SET DateResolved = CURDATE() WHERE RequestID = ?")) {
+                    p2.setInt(1, requestID);
+                    p2.executeUpdate();
+                }
+            }
+            return rows > 0;
+        } catch (SQLException e) {
+            System.err.println("Error updating request status: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
     }
 
 

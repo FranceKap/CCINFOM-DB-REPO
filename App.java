@@ -26,6 +26,9 @@ public class App {
     public App(DbConnection db){
         this.db = db;
     }
+    public DbConnection getDb() {
+        return db;
+    }
 
     public void start() {
         Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();

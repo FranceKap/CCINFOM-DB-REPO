@@ -8,6 +8,7 @@ import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.net.URL;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -19,14 +20,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
 public class LoginRegis {
-
-    private static void addRow(JPanel p, GridBagConstraints c, int row, String labelText, java.awt.Component comp) {
-        c.gridx = 0; c.gridy = row; c.gridwidth = 1; c.anchor = GridBagConstraints.WEST;
-        p.add(new JLabel(labelText), c);
-        c.gridx = 1; c.weightx = 1.0; c.fill = GridBagConstraints.HORIZONTAL;
-        p.add(comp, c);
-        c.fill = GridBagConstraints.NONE; c.weightx = 0;
-    }
 
     private static JButton createButton(String text, ActionListener al) {
         JButton b = new JButton(text);
@@ -43,9 +36,10 @@ public class LoginRegis {
         gc.anchor = GridBagConstraints.CENTER;
         gc.fill = GridBagConstraints.NONE;
 
-        // Logo (Manila City Logo --- pls make sure u have the Manila_Logo.png for this to show)
-        ImageIcon icon = new ImageIcon(LoginRegis.class.getResource("/Manila_Logo.png"));
-        if (icon != null) {
+        // Safe resource load for Manila_Logo.png
+        URL logoUrl = LoginRegis.class.getResource("/Manila_Logo.png");
+        if (logoUrl != null) {
+            ImageIcon icon = new ImageIcon(logoUrl);
             Image img = icon.getImage();
             int size = 120;
             Image scaled = img.getScaledInstance(size, size, Image.SCALE_SMOOTH);
@@ -114,22 +108,30 @@ public class LoginRegis {
                 String loginEmail = emailField.getText().trim();
                 String loginPassword = new String(passField.getPassword());
 
-                                User userFound = db.CitizenLogin(loginEmail, loginPassword);
-                if (userFound != null) {
-                    JOptionPane.showMessageDialog(app.getFrame(),
-                    "Login successful! Welcome" + userFound.getFirstName() + " " + userFound.getLastName() + "!",
-                    "Login", JOptionPane.INFORMATION_MESSAGE);
-
-                    app.setUserLoginInfo(userFound);
-
-                    app.showCard("citizen");
+                if (db == null) {
+                    JOptionPane.showMessageDialog(null, "Database connection not available.", "Login error", JOptionPane.ERROR_MESSAGE);
+                    return;
                 }
 
-                /* 
-                JOptionPane.showMessageDialog(app.getFrame(),
-                    "Attempt login for: " + loginEmail,
-                    "Login", JOptionPane.INFORMATION_MESSAGE);
-                */
+                User userFound = db.CitizenLogin(loginEmail, loginPassword);
+                if (userFound != null) {
+                    JOptionPane.showMessageDialog(null,
+                        "Login successful! Welcome " + userFound.getFirstName() + " " + userFound.getLastName() + "!",
+                        "Login", JOptionPane.INFORMATION_MESSAGE);
+
+                    
+                    try {
+ 
+                        java.lang.reflect.Method m = app.getClass().getMethod("setUserLoginInfo", User.class);
+                        m.invoke(app, userFound);
+                    } catch (Exception ignored) {}
+
+                    app.showCard("citizen");
+                } else {
+                    JOptionPane.showMessageDialog(null,
+                        "Login failed: invalid email or password.",
+                        "Login", JOptionPane.WARNING_MESSAGE);
+                }
             }
         });
         loginBtns.add(backFromLogin);
@@ -213,59 +215,56 @@ public class LoginRegis {
                 String password = new String(regPass.getPassword());
 
                 if (firstName.isEmpty() || lastName.isEmpty() || contactTxt.isEmpty() || email.isEmpty() || password.isEmpty()) {
-                    JOptionPane.showMessageDialog(app.getFrame(),
+                    JOptionPane.showMessageDialog(null,
                         "Please fill in all required fields (First name, Last name, Contact, Email, Password).",
                         "Register", JOptionPane.WARNING_MESSAGE);
                     return;
                 }
 
-                // normalize digits only and require exactly 9 digits AFTER the leading 0
+                // normalize digits only and require exactly 10 digits 
                 String digitsOnly = contactTxt.replaceAll("\\D", "");
 
                 // reject if user included a leading 0
                 if (digitsOnly.startsWith("0")) {
-                    JOptionPane.showMessageDialog(app.getFrame(),
+                    JOptionPane.showMessageDialog(null,
                         "Please enter the contact number WITHOUT the leading 0 (enter the 10 digits after the initial 0).",
                         "Register", JOptionPane.WARNING_MESSAGE);
                     return;
                 }
 
-                // require exactly 10 digits (numbers after the leading 0)
                 if (digitsOnly.length() != 10) {
-                    JOptionPane.showMessageDialog(app.getFrame(),
+                    JOptionPane.showMessageDialog(null,
                         "Contact number must be exactly 10 digits (enter the numbers after the leading 0).",
                         "Register", JOptionPane.WARNING_MESSAGE);
                     return;
                 }
 
-                // parse as long and pass long to DB
                 long contactNbr;
                 try {
                     contactNbr = Long.parseLong(digitsOnly);
                 } catch (NumberFormatException ex) {
-                    JOptionPane.showMessageDialog(app.getFrame(),
+                    JOptionPane.showMessageDialog(null,
                         "Contact Number is invalid.",
                         "Register", JOptionPane.WARNING_MESSAGE);
                     return;
                 }
 
                 if (db == null) {
-                    JOptionPane.showMessageDialog(app.getFrame(),
+                    JOptionPane.showMessageDialog(null,
                         "Database connection not available. Cannot register.",
                         "Register", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
 
                 try {
-                    // call existing DB method that expects int for contact
                     db.CitizenRegister(firstName, lastName, contactNbr, email, address, password);
-                    JOptionPane.showMessageDialog(app.getFrame(),
+                    JOptionPane.showMessageDialog(null,
                         "Registration successful for: " + firstName + " " + lastName,
                         "Register", JOptionPane.INFORMATION_MESSAGE);
                     app.showCard("choice");
                 } catch (Exception ex) {
                     ex.printStackTrace();
-                    JOptionPane.showMessageDialog(app.getFrame(),
+                    JOptionPane.showMessageDialog(null,
                         "Registration failed: " + ex.getMessage(),
                         "Register", JOptionPane.ERROR_MESSAGE);
                 }
