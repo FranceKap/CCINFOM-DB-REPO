@@ -8,7 +8,9 @@ import java.sql.Statement;
 import java.sql.Types;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class DbConnection {
     // connect directly to the application schema so inserts go to the correct DB
@@ -82,7 +84,7 @@ public class DbConnection {
 
     String CreateTableService =
     """
-    DROP TABLE Service IF EXISTS;
+    DROP TABLE IF EXISTS Service;
     CREATE TABLE Service (
     ServiceID INT AUTO_INCREMENT, 
     ServiceName VARCHAR(100), 
@@ -112,9 +114,9 @@ public class DbConnection {
 
     String CreateTableDepartment =
     """
-    DROP TABLE Department IF EXISTS;
+    DROP TABLE IF EXISTS Department;
     CREATE TABLE Department (
-    DepartmentID INT, 
+    DepartmentID INT NOT NULL, 
     DepartmentName VARCHAR(100),
     PRIMARY KEY (DepartmentID))
     """;
@@ -894,5 +896,130 @@ String InsertServicesDept5 = """
         }
 
         return 0; // no available staff → unassigned
+    }
+
+    public List<Map<String,Object>> generateServicesRequestedReport(String yearMonth) {
+        // yearMonth format: "2025-11"
+        String sql = """
+            SELECT s.ServiceName, COUNT(*) AS RequestCount
+            FROM ServiceRequest sr
+            JOIN Service s ON sr.ServiceID = s.ServiceID
+            WHERE DATE_FORMAT(sr.DateFiled, '%Y-%m') = ?
+            GROUP BY s.ServiceName
+            """;
+        List<Map<String,Object>> out = new ArrayList<>();
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            ps.setString(1, yearMonth);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Map<String,Object> row = new HashMap<>();
+                    row.put("ServiceName", rs.getString("ServiceName"));
+                    row.put("RequestCount", rs.getInt("RequestCount"));
+                    out.add(row);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("generateServicesRequestedReport error: " + e.getMessage());
+        }
+        return out;
+    }
+
+    // Services Status Report: count of each status (Pending, Ongoing, Resolved, Re-opened) for a given period (week or month)
+    public List<Map<String,Object>> generateServiceStatusReport(String periodType, String periodValue) {
+        // periodType: "month" or "week"
+        String whereClause;
+        if ("week".equalsIgnoreCase(periodType)) {
+            // periodValue expected like '2025-11-17' (Monday) -> use YEARWEEK
+            whereClause = "AND YEARWEEK(sr.DateFiled, 1) = YEARWEEK(?, 1)";
+        } else {
+            // default to month: periodValue like '2025-11'
+            whereClause = "AND DATE_FORMAT(sr.DateFiled, '%Y-%m') = ?";
+        }
+        String sql = "SELECT sr.RequestStatus, COUNT(*) AS Cnt FROM ServiceRequest sr WHERE 1=1 " + whereClause + " GROUP BY sr.RequestStatus";
+        List<Map<String,Object>> out = new ArrayList<>();
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            ps.setString(1, periodValue);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Map<String,Object> row = new HashMap<>();
+                    row.put("RequestStatus", rs.getString("RequestStatus"));
+                    row.put("Count", rs.getInt("Cnt"));
+                    out.add(row);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("generateServiceStatusReport error: " + e.getMessage());
+        }
+        return out;
+    }
+
+    // Monthly Completed Report: number of requests resolved within a given month (yyyy-MM)
+    public List<Map<String,Object>> generateMonthlyCompletedReport(String yearMonth) {
+        String sql = """
+            SELECT COUNT(*) AS CompletedCount
+            FROM ServiceRequest
+            WHERE DATE_FORMAT(DateResolved, '%Y-%m') = ?
+            """;
+
+        List<Map<String,Object>> out = new ArrayList<>();
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, yearMonth);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Map<String,Object> row = new HashMap<>();
+                    row.put("CompletedCount", rs.getInt("CompletedCount"));
+                    out.add(row);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("generateMonthlyCompletedReport error: " + e.getMessage());
+        }
+        return out;
+    }
+
+    // Staff Workload Report: number of requests assigned and resolved by a staff member in a period
+    public List<Map<String,Object>> generateStaffWorkloadReport(int staffID, String yearMonth) {
+        String sqlAssigned = """
+            SELECT COUNT(*) AS AssignedCount
+            FROM ServiceRequest
+            WHERE StaffID = ? AND DATE_FORMAT(DateFiled, '%Y-%m') = ?
+            """;
+        String sqlResolved = """
+            SELECT COUNT(*) AS ResolvedCount
+            FROM AssignmentResolution ar
+            WHERE ar.StaffID = ? AND DATE_FORMAT(ar.ResolutionDate, '%Y-%m') = ?
+            """;
+        List<Map<String,Object>> out = new ArrayList<>();
+        try (PreparedStatement psA = conn.prepareStatement(sqlAssigned);
+            PreparedStatement psR = conn.prepareStatement(sqlResolved)) {
+            
+            psA.setInt(1, staffID);
+            psA.setString(2, yearMonth);
+
+            try (ResultSet rsa = psA.executeQuery()) {
+                int assigned = rsa.next() ? rsa.getInt("AssignedCount") : 0;
+                psR.setInt(1, staffID);
+                psR.setString(2, yearMonth);
+
+                try (ResultSet rsr = psR.executeQuery()) {
+                    int resolved = rsr.next() ? rsr.getInt("ResolvedCount") : 0;
+                    Map<String,Object> row = new HashMap<>();
+                    row.put("StaffID", staffID);
+                    row.put("AssignedCount", assigned);
+                    row.put("ResolvedCount", resolved);
+                    out.add(row);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("generateStaffWorkloadReport error: " + e.getMessage());
+        }
+        return out;
     }
 }
