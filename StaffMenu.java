@@ -68,7 +68,7 @@ public class StaffMenu {
             @Override public void actionPerformed(ActionEvent e) { app.showCard("staffAvailability"); }
         });
         bReports.addActionListener(new ActionListener() {
-            @Override public void actionPerformed(ActionEvent e) { app.showCard("choice"); }
+            @Override public void actionPerformed(ActionEvent e) { app.showCard("staffGenerateReport"); }
         });
 
         btnCol.add(bRequests);
