@@ -55,11 +55,13 @@ public class App {
         cardPanel.add(LoginRegis.createRegisterPanel(this, db), "register");
 
         // Profile Page
-       cardPanel.add(Profile.createPanel(this), "profile");
+        cardPanel.add(Profile.createPanel(this), "profile");
 
         // other pages
         cardPanel.add(CitizenMenu.createPanel(this), "citizen");
         cardPanel.add(StaffMenu.createPanel(this), "staff");
+        cardPanel.add(StaffAssignedRequests.createPanel(this), "staffAssignedRequests");
+        cardPanel.add(StaffAvailabilityMenu.createPanel(this), "staffAvailability");
 
         // pages for CitizenMenu
         cardPanel.add(FileNewRequest.createPanel(this), "newRequest");
