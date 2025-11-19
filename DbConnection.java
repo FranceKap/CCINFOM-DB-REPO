@@ -219,7 +219,7 @@ public class DbConnection {
                 String userFirstName = rs.getString("FirstName");
                 int userNbr = rs.getInt("ContactNbr");
 
-System.out.println("Login successful. Welcome, " + rs.getString("FirstName") + " " + rs.getString("LastName") + "!");
+                System.out.println("Login successful. Welcome, " + rs.getString("FirstName") + " " + rs.getString("LastName") + "!");
 
                 return new User(userID, userLastName, userFirstName, userNbr);
             } else {

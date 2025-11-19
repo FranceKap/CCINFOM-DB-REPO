@@ -112,10 +112,15 @@ public class LoginRegis {
                 String loginEmail = emailField.getText().trim();
                 String loginPassword = new String(passField.getPassword());
 
-                if (db.CitizenLogin(loginEmail, loginPassword)) {
+                                User userFound = db.CitizenLogin(loginEmail, loginPassword);
+                if (userFound != null) {
                     JOptionPane.showMessageDialog(app.getFrame(),
-                    db.getCitizenLoginName(loginEmail, loginPassword),
+                    "Login successful! Welcome" + userFound.getFirstName() + " " + userFound.getLastName() + "!",
                     "Login", JOptionPane.INFORMATION_MESSAGE);
+
+                    app.setUserLoginInfo(userFound);
+
+                    app.showCard("citizen");
                 }
 
                 /* 
