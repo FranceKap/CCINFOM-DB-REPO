@@ -4,6 +4,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDate;
 
 public class DbConnection {
     private final String URL = "";      //rightclick an SQL connection and click "Copy JDBC Connection String to Clickboard"
@@ -369,11 +370,22 @@ public class DbConnection {
     }
 
 
+    public void InputServiceRequest(int accountID, int serviceID, String address, String serviceDesc){
+        //search for staffID WHERE availability > 0
+        int staffID = 0; //TODO temporary
+
+        //dateFiled
+        String currentDate = LocalDate.now().toString();
+        FileServiceRequest(accountID, staffID, serviceID, currentDate, address, serviceDesc);
+        //FileServiceRequest(accountID, [staffID], serviceID, [dateFiled], address, serviceDesc)
+    }
+
+
     public void FileServiceRequest(int accountID, int staffID, int serviceID, String dateFiled, 
                                     String address, String serviceDesc){
         String insertServiceRequestSQL = """
         INSERT INTO ServiceRequest (
-        CitizenID, 
+        AccountID, 
         StaffID, 
         ServiceID, 
         DateFiled, 
@@ -384,7 +396,9 @@ public class DbConnection {
                 """;
 
 
-        try (PreparedStatement pstmt = conn.prepareStatement(insertServiceRequestSQL)) {
+        try {
+            PreparedStatement pstmt = conn.prepareStatement(insertServiceRequestSQL);
+
             pstmt.setInt(1, accountID);
             pstmt.setInt(2, staffID);
             pstmt.setInt(3, serviceID);
@@ -392,18 +406,16 @@ public class DbConnection {
             pstmt.setString(5, address);
             pstmt.setString(6, serviceDesc);
             pstmt.setString(7, "Pending");
-            int rows = pstmt.executeUpdate();
-            System.out.println("Service request filed. rows = " + rows);
+
+            pstmt.executeUpdate();
+
+            System.out.println("Service request filed.");
+
         } catch (SQLException e) {
             System.err.println("Error filing service request: " + e.getMessage());
-            e.printStackTrace();
         }
     
     
     }
-
-    
-
-
     
 }

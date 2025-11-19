@@ -62,7 +62,7 @@ public class App {
         cardPanel.add(StaffMenu.createPanel(this), "staff");
 
         // pages for CitizenMenu
-        cardPanel.add(FileNewRequest.createPanel(this), "newRequest");
+        cardPanel.add(FileNewRequest.createPanel(this, db), "newRequest");
         cardPanel.add(CitizenViewRequest.createPanel(this), "viewCitizenRequest");
 
         cards.show(cardPanel, "choice");
@@ -173,16 +173,11 @@ public class App {
         return profileReturn; 
     }
 
-    //I THINK you can just make it userLogInfo = user but I'm tripping and I'm not risking it or else I'm crashing out
-    //update: yes you can and it works
     public void setUserLoginInfo(User user) {
         userLoginInfo = user;
+    }
 
-        /* 
-        userLoginInfo.setID(user.getID());
-        userLoginInfo.setLastName(user.getLastName());
-        userLoginInfo.setFirstName(user.getFirstName());
-        userLoginInfo.setContactNbr(user.getContactNbr());
-        */
+    public User getUserLoginInfo(){
+        return userLoginInfo;
     }
 }
