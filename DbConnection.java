@@ -137,6 +137,56 @@ public class DbConnection {
     FOREIGN KEY (CitizenID) REFERENCES Citizen(AccountID))
     """;
 
+    //Scripts that insert data into tables
+
+String InsertDepartments = """
+    INSERT IGNORE INTO Department (DepartmentID, DepartmentName) VALUES
+    (1, 'Department of Engineering and Public Works'),
+    (2, 'City General Services Office'),
+    (3, 'Department of Public Services'),
+    (4, 'Public Recreations Bureau'),
+    (5, 'Parks Development Office');
+    """;
+
+String InsertServicesDept1 = """
+    INSERT IGNORE INTO Service (ServiceName, ServiceType, DepartmentID) VALUES
+    ('Road Damage Inspection Request', 'Inspection', 1),
+    ('Drainage or Sewerage Cleaning Request', 'Maintenance', 1),
+    ('Street Signage Issue Complaint', 'Complaint', 1),
+    ('Infrastructure Damage Assessment', 'Inspection', 1);
+    """;
+
+String InsertServicesDept2 = """
+    INSERT IGNORE INTO Service (ServiceName, ServiceType, DepartmentID) VALUES
+    ('City Furniture Repair Request', 'Repair', 2),
+    ('Hazardous Waste Disposal Request', 'Cleaning', 2),
+    ('City Building Maintenance Request', 'Maintenance', 2);
+    """;
+
+String InsertServicesDept3 = """
+    INSERT IGNORE INTO Service (ServiceName, ServiceType, DepartmentID) VALUES
+    ('Garbage Collection Request', 'Cleaning', 3),
+    ('Illegal Dumping Complaint', 'Complaint', 3),
+    ('Street Sweeping Request', 'Cleaning', 3),
+    ('Public Trash Bin Maintenance Request', 'Maintenance', 3);
+    """;
+
+String InsertServicesDept4 = """
+    INSERT IGNORE INTO Service (ServiceName, ServiceType, DepartmentID) VALUES
+    ('Playground Equipment Maintenance Request', 'Maintenance', 4),
+    ('Recreational Program Registration Inquiry', 'Information', 4);
+    """;
+
+String InsertServicesDept5 = """
+    INSERT IGNORE INTO Service (ServiceName, ServiceType, DepartmentID) VALUES
+    ('Park Grounds Maintenance Request', 'Maintenance', 5),
+    ('Tree Trimming or Pruning Request', 'Maintenance', 5),
+    ('Park Facility Damage Inspection', 'Inspection', 5);
+    """;
+
+
+
+
     // schema and table initializer
     public void initializeDatabase() {
         if (conn == null) {
@@ -163,6 +213,18 @@ public class DbConnection {
             System.out.println("CreateTableAssignmentResolution");
             stmt.execute(CreateTableReopenRequest);
             System.out.println("CreateTableReopenRequest");
+            stmt.execute(InsertDepartments);
+            System.out.println("InsertDepartments");
+            stmt.execute(InsertServicesDept1);
+            System.out.println("InsertServicesDept1");
+            stmt.execute(InsertServicesDept2);
+            System.out.println("InsertServicesDept2");
+            stmt.execute(InsertServicesDept3);
+            System.out.println("InsertServicesDept3");
+            stmt.execute(InsertServicesDept4);
+            System.out.println("InsertServicesDept4");
+            stmt.execute(InsertServicesDept5);
+            System.out.println("InsertServicesDept5");
             System.out.println("Database and tables initialized successfully.");
         } catch (SQLException e) {
             System.err.println("Error initializing database: " + e.getMessage());
