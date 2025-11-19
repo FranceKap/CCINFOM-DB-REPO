@@ -5,13 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-<<<<<<< Updated upstream
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-=======
 import java.sql.Types;
->>>>>>> Stashed changes
 
 public class DbConnection {
     // connect directly to the application schema so inserts go to the correct DB
@@ -41,6 +35,7 @@ public class DbConnection {
             }
 
             conn = DriverManager.getConnection(URL, USER, PASSWORD);
+            // make sure autocommit is enabled (so inserts are committed immediately)
             conn.setAutoCommit(true);
             System.out.println("Connection established successfully (autocommit=" + conn.getAutoCommit() + ").");
         } catch (SQLException e) {
@@ -48,31 +43,6 @@ public class DbConnection {
             e.printStackTrace();
         }
         return conn;
-    }
-
-    public boolean updateRequestStatus(int requestID, String newStatus) {
-        if (conn == null) {
-            System.err.println("Cannot update request status: DB connection is null.");
-            return false;
-        }
-        String sql = "UPDATE ServiceRequest SET RequestStatus = ? WHERE RequestID = ?";
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, newStatus);
-            pstmt.setInt(2, requestID);
-            int rows = pstmt.executeUpdate();
-            System.out.println("updateRequestStatus: rows affected = " + rows);
-            if (rows > 0 && "Resolved".equalsIgnoreCase(newStatus)) {
-                try (PreparedStatement p2 = conn.prepareStatement("UPDATE ServiceRequest SET DateResolved = CURDATE() WHERE RequestID = ?")) {
-                    p2.setInt(1, requestID);
-                    p2.executeUpdate();
-                }
-            }
-            return rows > 0;
-        } catch (SQLException e) {
-            System.err.println("Error updating request status: " + e.getMessage());
-            e.printStackTrace();
-            return false;
-        }
     }
 
 
@@ -174,7 +144,7 @@ public class DbConnection {
     //Scripts that insert data into tables
 
 String InsertDepartments = """
-    INSERT IGNORE INTO Department (DepartmentID, DepartmentName) VALUES
+    INSERT INTO Department (DepartmentID, DepartmentName) VALUES
     (1, 'Department of Engineering and Public Works'),
     (2, 'City General Services Office'),
     (3, 'Department of Public Services'),
@@ -183,7 +153,7 @@ String InsertDepartments = """
     """;
 
 String InsertServicesDept1 = """
-    INSERT IGNORE INTO Service (ServiceName, ServiceType, DepartmentID) VALUES
+    INSERT INTO Service (ServiceName, ServiceType, DepartmentID) VALUES
     ('Road Damage Inspection Request', 'Inspection', 1),
     ('Drainage or Sewerage Cleaning Request', 'Maintenance', 1),
     ('Street Signage Issue Complaint', 'Complaint', 1),
@@ -191,14 +161,14 @@ String InsertServicesDept1 = """
     """;
 
 String InsertServicesDept2 = """
-    INSERT IGNORE INTO Service (ServiceName, ServiceType, DepartmentID) VALUES
+    INSERT INTO Service (ServiceName, ServiceType, DepartmentID) VALUES
     ('City Furniture Repair Request', 'Repair', 2),
     ('Hazardous Waste Disposal Request', 'Cleaning', 2),
     ('City Building Maintenance Request', 'Maintenance', 2);
     """;
 
 String InsertServicesDept3 = """
-    INSERT IGNORE INTO Service (ServiceName, ServiceType, DepartmentID) VALUES
+    INSERT INTO Service (ServiceName, ServiceType, DepartmentID) VALUES
     ('Garbage Collection Request', 'Cleaning', 3),
     ('Illegal Dumping Complaint', 'Complaint', 3),
     ('Street Sweeping Request', 'Cleaning', 3),
@@ -206,13 +176,13 @@ String InsertServicesDept3 = """
     """;
 
 String InsertServicesDept4 = """
-    INSERT IGNORE INTO Service (ServiceName, ServiceType, DepartmentID) VALUES
+    INSERT INTO Service (ServiceName, ServiceType, DepartmentID) VALUES
     ('Playground Equipment Maintenance Request', 'Maintenance', 4),
     ('Recreational Program Registration Inquiry', 'Information', 4);
     """;
 
 String InsertServicesDept5 = """
-    INSERT IGNORE INTO Service (ServiceName, ServiceType, DepartmentID) VALUES
+    INSERT INTO Service (ServiceName, ServiceType, DepartmentID) VALUES
     ('Park Grounds Maintenance Request', 'Maintenance', 5),
     ('Tree Trimming or Pruning Request', 'Maintenance', 5),
     ('Park Facility Damage Inspection', 'Inspection', 5);
@@ -499,12 +469,6 @@ String InsertServicesDept5 = """
     }
 
 
-<<<<<<< Updated upstream
-    public void InputServiceRequest(int accountID, int serviceID, int departmentID, String address, String serviceDesc){
-        //search for staffID WHERE availability > 0 AND staff.departmentID == departmentID
-        int staffID = 1; //TODO temporary
-=======
->>>>>>> Stashed changes
 
 
     /*
@@ -733,23 +697,6 @@ String InsertServicesDept5 = """
     }
 
 
-    public boolean updateRequestStatus(int requestID, String newStatus){
-        String sql = """
-            UPDATE ServiceRequest
-            SET RequestStatus = ?
-            WHERE RequestID = ?
-            """;
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, newStatus);
-            pstmt.setInt(2, requestID);
-            pstmt.executeUpdate();
-            return true;
-        } catch (SQLException e) {
-            System.err.println("Error updating request status: " + e.getMessage());
-            return false;
-        }
-    }
-
 
     public boolean resolveRequest(int requestID, int staffID, String resolutionDate){
         String sql = """
@@ -872,25 +819,28 @@ String InsertServicesDept5 = """
         }
     }
 
-
-
-    // Add this method to DbConnection.java
-    public List<String> getServiceNames() {
-        String sql = "SELECT ServiceName FROM Service ORDER BY ServiceName";
-        List<String> serviceNames = new ArrayList<>();
-        try (PreparedStatement pstmt = conn.prepareStatement(sql);
-            ResultSet rs = pstmt.executeQuery()) {
-            
-            while (rs.next()) {
-                serviceNames.add(rs.getString("ServiceName"));
-            }
-        } catch (SQLException e) {
-            System.err.println("Error fetching service names: " + e.getMessage());
-            e.printStackTrace();
+    public boolean updateRequestStatus(int requestID, String newStatus) {
+        if (conn == null) {
+            System.err.println("Cannot update request status: DB connection is null.");
+            return false;
         }
-        return serviceNames;
+        String sql = "UPDATE ServiceRequest SET RequestStatus = ? WHERE RequestID = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, newStatus);
+            pstmt.setInt(2, requestID);
+            int rows = pstmt.executeUpdate();
+            System.out.println("updateRequestStatus: rows affected = " + rows);
+            if (rows > 0 && "Resolved".equalsIgnoreCase(newStatus)) {
+                try (PreparedStatement p2 = conn.prepareStatement("UPDATE ServiceRequest SET DateResolved = CURDATE() WHERE RequestID = ?")) {
+                    p2.setInt(1, requestID);
+                    p2.executeUpdate();
+                }
+            }
+            return rows > 0;
+        } catch (SQLException e) {
+            System.err.println("Error updating request status: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
     }
-
-
-    
 }
