@@ -199,7 +199,7 @@ public class DbConnection {
         }
     }
 
-    public boolean CitizenLogin(String email, String password){
+    public User CitizenLogin(String email, String password){
         String selectCitizenSQL = """
         SELECT * 
         FROM Citizen 
@@ -211,51 +211,24 @@ public class DbConnection {
             pstmt.setString(1, email);
             pstmt.setString(2, password);
 
-
             ResultSet rs = pstmt.executeQuery();
 
             if(rs.next()){
-                System.out.println("Login successful. Welcome, " + rs.getString("FirstName") + " " + rs.getString("LastName") + "!");
-                return true;
+                int userID = rs.getInt("AccountID");
+                String userLastName = rs.getString("LastName");
+                String userFirstName = rs.getString("FirstName");
+                int userNbr = rs.getInt("ContactNbr");
+
+System.out.println("Login successful. Welcome, " + rs.getString("FirstName") + " " + rs.getString("LastName") + "!");
+
+                return new User(userID, userLastName, userFirstName, userNbr);
             } else {
                 System.out.println("Login failed. Invalid email or password.");
-                return false;
+                return null;
             }
         } catch (SQLException e){
             System.err.println("Error during citizen login: " + e.getMessage());
-            return false;
-        }
-    }
-
-    //gets CitizenLoginName
-    //i know it's inefficient and I copied it off of the function above but shhhhhh
-    public String getCitizenLoginName(String email, String password){
-        String getCitizenName = """
-        SELECT * 
-        FROM Citizen 
-        WHERE Email = ? AND Password = ?
-                """;
-        try{
-            PreparedStatement pstmt = conn.prepareStatement(getCitizenName);
-
-            pstmt.setString(1, email);
-            pstmt.setString(2, password);
-
-
-            ResultSet rs = pstmt.executeQuery();
-
-            if(rs.next()){
-                
-                //System.out.println("Login successful. Welcome, " + rs.getString("FirstName") + " " + rs.getString("LastName") + "!");
-                return "Login successful. Welcome, " + rs.getString("FirstName") + " " + rs.getString("LastName") + "!";
-            }
-            else{
-                return "Login failed. Invalid email or password.";
-            }
-            //surely it won't cause an invalid login error
-        } catch (SQLException e){
-            //System.err.println("Error during citizen login: " + e.getMessage());
-            return "Error during citizen login: " + e.getMessage();
+            return null;
         }
     }
 

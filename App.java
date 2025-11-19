@@ -21,6 +21,8 @@ public class App {
 
     private DbConnection db;
 
+    private User userLoginInfo;
+
     public App(DbConnection db){
         this.db = db;
     }
@@ -171,4 +173,16 @@ public class App {
         return profileReturn; 
     }
 
+    //I THINK you can just make it userLogInfo = user but I'm tripping and I'm not risking it or else I'm crashing out
+    //update: yes you can and it works
+    public void setUserLoginInfo(User user) {
+        userLoginInfo = user;
+
+        /* 
+        userLoginInfo.setID(user.getID());
+        userLoginInfo.setLastName(user.getLastName());
+        userLoginInfo.setFirstName(user.getFirstName());
+        userLoginInfo.setContactNbr(user.getContactNbr());
+        */
+    }
 }
