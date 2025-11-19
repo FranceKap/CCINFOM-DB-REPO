@@ -396,9 +396,7 @@ public class DbConnection {
                 """;
 
 
-        try {
-            PreparedStatement pstmt = conn.prepareStatement(insertServiceRequestSQL);
-
+        try (PreparedStatement pstmt = conn.prepareStatement(insertServiceRequestSQL)) {
             pstmt.setInt(1, accountID);
             pstmt.setInt(2, staffID);
             pstmt.setInt(3, serviceID);
@@ -417,5 +415,9 @@ public class DbConnection {
     
     
     }
+
+    
+
+
     
 }
