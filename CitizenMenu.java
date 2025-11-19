@@ -1,5 +1,4 @@
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -17,7 +16,6 @@ public class CitizenMenu {
         //what buttonPanel looks
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 30, 0));
         buttonPanel.setAlignmentX(JPanel.CENTER_ALIGNMENT);
-        buttonPanel.setBackground(Color.pink); //TODO placeholder
         p.add(buttonPanel);
 
         JButton fileRequestBtn = new JButton("File New Service Request");
@@ -38,7 +36,6 @@ public class CitizenMenu {
         buttonPanel.add(viewRequestsBtn);
 
         JPanel bottom = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        bottom.setBackground(Color.blue);
         JButton back = new JButton("Back");
         back.addActionListener(new ActionListener() {
             @Override public void actionPerformed(ActionEvent e) {
