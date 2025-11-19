@@ -51,7 +51,10 @@ public class App {
         // choice + login + register panels are provided by LoginRegis
         cardPanel.add(LoginRegis.createChoicePanel(this), "choice");
         cardPanel.add(LoginRegis.createLoginPanel(this, db), "login");
+<<<<<<< HEAD
         // TODO might need to make Login return CitizenID somehow (done?)
+=======
+>>>>>>> b52a5239476096f79cc3b9fd345eab668fe7252c
         cardPanel.add(LoginRegis.createRegisterPanel(this, db), "register");
 
         // Profile Page
