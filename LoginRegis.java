@@ -15,6 +15,8 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 
 public class LoginRegis {
 
@@ -144,25 +146,54 @@ public class LoginRegis {
         r.insets = new Insets(6, 6, 6, 6);
         r.fill = GridBagConstraints.HORIZONTAL;
 
+        // First Name
         r.gridx = 0; r.gridy = 0;
-        registerForm.add(new JLabel("Username:"), r);
+        registerForm.add(new JLabel("First Name:"), r);
         r.gridx = 1;
-        JTextField regUser = new JTextField(20);
-        registerForm.add(regUser, r);
+        JTextField regFirst = new JTextField(20);
+        registerForm.add(regFirst, r);
 
+        // Last Name
         r.gridx = 0; r.gridy = 1;
+        registerForm.add(new JLabel("Last Name:"), r);
+        r.gridx = 1;
+        JTextField regLast = new JTextField(20);
+        registerForm.add(regLast, r);
+
+        // Contact Number
+        r.gridx = 0; r.gridy = 2;
+        registerForm.add(new JLabel("Contact Number (+63):"), r);
+        r.gridx = 1;
+        JTextField regContact = new JTextField(20);
+        registerForm.add(regContact, r);
+
+        // Email
+        r.gridx = 0; r.gridy = 3;
         registerForm.add(new JLabel("Email:"), r);
         r.gridx = 1;
         JTextField regEmail = new JTextField(20);
         registerForm.add(regEmail, r);
 
-        r.gridx = 0; r.gridy = 2;
+        // Address
+        r.gridx = 0; r.gridy = 4; r.anchor = GridBagConstraints.NORTHEAST;
+        registerForm.add(new JLabel("Address:"), r);
+        r.gridx = 1; r.anchor = GridBagConstraints.LINE_START;
+        JTextArea regAddress = new JTextArea(3, 20);
+        regAddress.setLineWrap(true);
+        regAddress.setWrapStyleWord(true);
+        JScrollPane addrScroll = new JScrollPane(regAddress);
+        registerForm.add(addrScroll, r);
+        r.anchor = GridBagConstraints.WEST; // reset
+
+        // Password
+        r.gridx = 0; r.gridy = 5;
         registerForm.add(new JLabel("Password:"), r);
         r.gridx = 1;
         JPasswordField regPass = new JPasswordField(20);
         registerForm.add(regPass, r);
 
-        r.gridx = 0; r.gridy = 3; r.gridwidth = 2;
+        // Buttons row
+        r.gridx = 0; r.gridy = 6; r.gridwidth = 2;
         JPanel regBtns = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton backFromReg = new JButton("Back");
         backFromReg.addActionListener(new ActionListener() {
@@ -173,19 +204,73 @@ public class LoginRegis {
         JButton doRegister = new JButton("Register");
         doRegister.addActionListener(new ActionListener() {
             @Override public void actionPerformed(ActionEvent e) {
-                String user = regUser.getText().trim();
+                // gather inputs in correct order for CitizenRegister(firstName, lastName, contactNbr, email, address, password)
+                String firstName = regFirst.getText().trim();
+                String lastName = regLast.getText().trim();
+                String contactTxt = regContact.getText().trim();
                 String email = regEmail.getText().trim();
+                String address = regAddress.getText().trim();
                 String password = new String(regPass.getPassword());
 
-                //CitizenRegister(String firstName, String lastName, int contactNbr, String email, String address, String password)
-                db.CitizenRegister("firstName", "lastName", 0, email, user, password);
-                //TODO placeholder strings, pls complete LoginRegis to include the other attributes
+                if (firstName.isEmpty() || lastName.isEmpty() || contactTxt.isEmpty() || email.isEmpty() || password.isEmpty()) {
+                    JOptionPane.showMessageDialog(app.getFrame(),
+                        "Please fill in all required fields (First name, Last name, Contact, Email, Password).",
+                        "Register", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
 
-                JOptionPane.showMessageDialog(app.getFrame(),
-                    "Attempt register user: " + user,
-                    "Register", JOptionPane.INFORMATION_MESSAGE);
+                // normalize digits only and require exactly 9 digits AFTER the leading 0
+                String digitsOnly = contactTxt.replaceAll("\\D", "");
+
+                // reject if user included a leading 0
+                if (digitsOnly.startsWith("0")) {
+                    JOptionPane.showMessageDialog(app.getFrame(),
+                        "Please enter the contact number WITHOUT the leading 0 (enter the 10 digits after the initial 0).",
+                        "Register", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+
+                // require exactly 10 digits (numbers after the leading 0)
+                if (digitsOnly.length() != 10) {
+                    JOptionPane.showMessageDialog(app.getFrame(),
+                        "Contact number must be exactly 10 digits (enter the numbers after the leading 0).",
+                        "Register", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+
+                // parse as long and pass long to DB
+                long contactNbr;
+                try {
+                    contactNbr = Long.parseLong(digitsOnly);
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(app.getFrame(),
+                        "Contact Number is invalid.",
+                        "Register", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+
+                if (db == null) {
+                    JOptionPane.showMessageDialog(app.getFrame(),
+                        "Database connection not available. Cannot register.",
+                        "Register", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                try {
+                    // call existing DB method that expects int for contact
+                    db.CitizenRegister(firstName, lastName, contactNbr, email, address, password);
+                    JOptionPane.showMessageDialog(app.getFrame(),
+                        "Registration successful for: " + firstName + " " + lastName,
+                        "Register", JOptionPane.INFORMATION_MESSAGE);
+                    app.showCard("choice");
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(app.getFrame(),
+                        "Registration failed: " + ex.getMessage(),
+                        "Register", JOptionPane.ERROR_MESSAGE);
+                }
             }
-        });    
+        });
         regBtns.add(backFromReg);
         regBtns.add(doRegister);
         registerForm.add(regBtns, r);
